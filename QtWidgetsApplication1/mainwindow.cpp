@@ -149,7 +149,6 @@ MainWindow::MainWindow(QWidget* parent) :
     auto buttonPartCoorOK=new QPushButton(this);
     buttonPartCoorOK->setText(tr("PartCoordinateOK"));
     QVBoxLayout *layout06=new QVBoxLayout(this);
-    QSpacerItem *hSpacer05=new QSpacerItem(40,20,QSizePolicy::Expanding, QSizePolicy::Minimum);
     layout06->addWidget(EditPartXCoor);
     layout06->addWidget(EditPartYCoor);
     layout06->addWidget(EditPartZCoor);
@@ -157,7 +156,6 @@ MainWindow::MainWindow(QWidget* parent) :
     layout06->addWidget(EditPartRYCoor);
     layout06->addWidget(EditPartRZCoor);
     layout06->addWidget(buttonPartCoorOK);
-    layout06->addItem(hSpacer05);
     ui->tabWidgetPage2->setLayout(layout06);
 
 
@@ -209,8 +207,9 @@ MainWindow::MainWindow(QWidget* parent) :
     layout07->addWidget(EditJoint5Angle);
     layout07->addWidget(Editlabel6);
     layout07->addWidget(EditJoint6Angle);
-    layout07->addWidget(buttonJointAngleMoveStart);
     layout07->addItem(hSpacer06);
+    layout07->addWidget(buttonJointAngleMoveStart);
+    
     ui->tabWidgetPage3->setLayout(layout07);
 
     QObject::connect(buttonJointAngleMoveStart, &QPushButton::clicked, this, [&] {

@@ -4,10 +4,11 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    QFont newFont("Microsoft YaHei",10);
-    a.setFont(newFont);
+    QFile qss("StyleSheet.qss");
+    qss.open(QFile::ReadOnly);
+    a.setStyleSheet(qss.readAll());
     MainWindow w;
     w.show();
-
+    qss.close();
     return a.exec();
 }

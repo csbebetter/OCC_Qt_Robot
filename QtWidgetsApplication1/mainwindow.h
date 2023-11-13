@@ -13,7 +13,6 @@
 #include <QPlainTextEdit>
 #include <QDialog>
 #include <QLabel>
-#include "myfunc.h"
 
 namespace Ui {
 class MainWindow;

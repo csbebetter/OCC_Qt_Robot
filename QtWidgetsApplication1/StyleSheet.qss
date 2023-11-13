@@ -1,0 +1,29 @@
+* {
+    font-family: Microsoft YaHei;
+    font-size: 18px;
+    background-color: #fafafa;
+}
+
+QMenu {
+    color: #000000; /* ×ÖÌåÑÕÉ« */
+}
+
+QTextEdit,QLineEdit {
+    background-color: transparent;
+    color: darkblue;
+    border: 2px solid darkblue;
+    border-radius: 5px;
+}
+
+QPushButton {
+    font-weight: bold;
+    background-color: lightgrey;
+    border: none; 
+    color: #000000;
+    padding: 8px 16px;
+    border-radius: 5px; 
+}
+
+QTabWidget::pane {
+    border: none; /* ÒÆ³ý QTabWidget ±ß¿ò */
+}
