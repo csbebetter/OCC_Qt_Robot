@@ -71,15 +71,6 @@
              <underline>false</underline>
             </font>
            </property>
-           <column>
-            <property name="text">
-             <string>机械臂结构</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>images/appicon.ico</normaloff>images/appicon.ico</iconset>
-            </property>
-           </column>
           </widget>
           <widget class="QTabWidget" name="tabWidget01">
            <property name="enabled">

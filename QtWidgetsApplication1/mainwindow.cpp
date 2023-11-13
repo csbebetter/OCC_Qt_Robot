@@ -11,6 +11,11 @@ MainWindow::MainWindow(QWidget* parent) :
     this->setWindowTitle(QString("RobotSimTec"));
     this->setWindowIcon(QIcon(":/RST.png"));
 
+    ui->treeWidget->clear();    //QTreeWidget清空
+    //ui->treeWidget->setFrameStyle(QFrame::NoFrame);  //框架样式
+    ui->treeWidget->setHeaderLabel(QStringLiteral("机器人结构树"));  //设置头的标题
+    ui->treeWidget->headerItem()->setIcon(0, QIcon(":/appicon.ico"));
+
     ui->menu_3->setIcon(QIcon(":/themes/dark/import.svg"));
     ui->actionRbtImport->setIcon(QIcon(":/themes/dark/menu_3/Rbt.png"));
     ui->actionWopImport->setIcon(QIcon(":/themes/dark/menu_3/Wop.png"));

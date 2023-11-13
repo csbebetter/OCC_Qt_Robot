@@ -163,22 +163,24 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
         TDF_Label mainLabel = doc->Main();
         Handle(XCAFDoc_ShapeTool) ShapeTool = XCAFDoc_DocumentTool::ShapeTool(mainLabel);
         Handle(XCAFDoc_ColorTool) ColorTool = XCAFDoc_DocumentTool::ColorTool(mainLabel);
+
         TDF_LabelSequence tdfLabels;
         ShapeTool->GetFreeShapes(tdfLabels);   //获取装配体和组件对应名称
         int Roots = tdfLabels.Length();
         qDebug()<<"Roots:"<<Roots;
 
-
         TDF_Label Label = tdfLabels.Value(1);
         TDF_LabelSequence components;
         Tree.name = Ui::GetLabelName(Label);
         ShapeTool->GetComponents(Label, components);
+        
 
         for (int i=1;i<=components.Length();i++) {
             TDF_Label Label00 = components.Value(i);
             auto shape=ShapeTool->GetShape(Label00);
             Tree.childName.push_back(Ui::GetLabelName(Label00));
             RobotAISShape[i-1]=new AIS_Shape(shape);
+            
             m_context->Display(RobotAISShape[i-1],true);
             getView()->FitAll();
         }
