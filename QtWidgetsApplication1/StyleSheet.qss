@@ -27,4 +27,3 @@ QPushButton {
 QTabWidget::pane {
     border: none; /* ÒÆ³ý QTabWidget ±ß¿ò */
 }
-

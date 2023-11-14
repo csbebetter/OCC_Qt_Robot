@@ -127,6 +127,7 @@
 #include <TNaming_NamedShape.hxx>
 #include <TNaming_NamedShape.hxx>
 #include <TNaming_UsedShapes.hxx>
+#include <XCAFPrs_AISObject.hxx>
 #include <XCAFDoc_Color.hxx>
 #include <XCAFDoc_LayerTool.hxx>
 #include <XCAFDoc_ShapeMapTool.hxx>

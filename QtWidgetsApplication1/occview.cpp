@@ -1,5 +1,6 @@
 ﻿#include "occview.h"
 
+
 #define KR6
 
 #ifdef UR5
@@ -162,8 +163,8 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
     {
         TDF_Label mainLabel = doc->Main();
         Handle(XCAFDoc_ShapeTool) ShapeTool = XCAFDoc_DocumentTool::ShapeTool(mainLabel);
-        Handle(XCAFDoc_ColorTool) ColorTool = XCAFDoc_DocumentTool::ColorTool(mainLabel);
-
+        /*Handle(XCAFDoc_ColorTool) ColorTool = XCAFDoc_DocumentTool::ColorTool(mainLabel);*/
+        
         TDF_LabelSequence tdfLabels;
         ShapeTool->GetFreeShapes(tdfLabels);   //获取装配体和组件对应名称
         int Roots = tdfLabels.Length();
@@ -173,14 +174,12 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
         TDF_LabelSequence components;
         Tree.name = Ui::GetLabelName(Label);
         ShapeTool->GetComponents(Label, components);
-        
 
         for (int i=1;i<=components.Length();i++) {
             TDF_Label Label00 = components.Value(i);
-            auto shape=ShapeTool->GetShape(Label00);
+            /*auto shape=ShapeTool->GetShape(Label00);*/
             Tree.childName.push_back(Ui::GetLabelName(Label00));
-            RobotAISShape[i-1]=new AIS_Shape(shape);
-            
+            RobotAISShape[i - 1]=new XCAFPrs_AISObject(Label00);
             m_context->Display(RobotAISShape[i-1],true);
             getView()->FitAll();
         }
@@ -254,30 +253,30 @@ void OccView::initKR6()
 void OccView::loadDisplayRobotJoints()
 {
 
-    STEPControl_Reader reader;
-    static int index=0;
-    IFSelect_ReturnStatus stat = reader.ReadFile(robotPath.toUtf8());
-    if (stat != IFSelect_RetDone)
-        return;
-    //加载文件
-    Standard_Integer NbRoots = reader.NbRootsForTransfer();
-    Standard_Integer num = reader.TransferRoots();
-    auto shape=reader.OneShape();
-    RobotAISShape[index]=new AIS_Shape(shape);
-    m_context->Display(RobotAISShape[index],Standard_True);
+    //STEPControl_Reader reader;
+    //static int index=0;
+    //IFSelect_ReturnStatus stat = reader.ReadFile(robotPath.toUtf8());
+    //if (stat != IFSelect_RetDone)
+    //    return;
+    ////加载文件
+    //Standard_Integer NbRoots = reader.NbRootsForTransfer();
+    //Standard_Integer num = reader.TransferRoots();
+    //auto shape=reader.OneShape();
+    //RobotAISShape[index]=new AIS_Shape(shape);
+    //m_context->Display(RobotAISShape[index],Standard_True);
 
-    index++;
-    if(index==7){
+    //index++;
+    //if(index==7){
 
-        RobotAISShape[5]->AddChild(RobotAISShape[6]);
-        RobotAISShape[4]->AddChild(RobotAISShape[5]);
-        RobotAISShape[3]->AddChild(RobotAISShape[4]);
-        RobotAISShape[2]->AddChild(RobotAISShape[3]);
-        RobotAISShape[1]->AddChild(RobotAISShape[2]);
-        RobotAISShape[0]->AddChild(RobotAISShape[1]);
+    //    RobotAISShape[5]->AddChild(RobotAISShape[6]);
+    //    RobotAISShape[4]->AddChild(RobotAISShape[5]);
+    //    RobotAISShape[3]->AddChild(RobotAISShape[4]);
+    //    RobotAISShape[2]->AddChild(RobotAISShape[3]);
+    //    RobotAISShape[1]->AddChild(RobotAISShape[2]);
+    //    RobotAISShape[0]->AddChild(RobotAISShape[1]);
 
-        index=0;
-    }
+    //    index=0;
+    //}
 }
 
 void OccView::loadDisplayWorkpiece()
@@ -537,31 +536,27 @@ void OccView::RobotBackHome()
 {
     getJoint01CurrentAngle()=getJoint02CurrentAngle()=getJoint03CurrentAngle()=0;
     getJoint04CurrentAngle()=getJoint05CurrentAngle()=getJoint06CurrentAngle()=0;
-    gp_Ax1 ax1(gp_Pnt(0,0,0),gp_Dir(0,0,1));
+    
     gp_Trsf trans;
     trans.SetRotation(GeneralAx1,getJoint01CurrentAngle());
     m_context->SetLocation( RobotAISShape[1],trans);
 
-    gp_Ax1 ax2(gp_Pnt(25,0,400),gp_Dir(0,1,0));
     trans.SetRotation(GeneralAx2,getJoint02CurrentAngle());
     m_context->SetLocation( RobotAISShape[2],trans);
 
-    gp_Ax1 ax3(gp_Pnt(25,0,855),gp_Dir(0,1,0));
     trans.SetRotation(GeneralAx3,getJoint03CurrentAngle());
     m_context->SetLocation( RobotAISShape[3],trans);
 
-    gp_Ax1 ax4(gp_Pnt(142,0,890),gp_Dir(1,0,0));
     trans.SetRotation(GeneralAx4,getJoint04CurrentAngle());
     m_context->SetLocation( RobotAISShape[4],trans);
 
-    gp_Ax1 ax5(gp_Pnt(445,0,890),gp_Dir(0,1,0));
     trans.SetRotation(GeneralAx5,getJoint05CurrentAngle());
     m_context->SetLocation( RobotAISShape[5],trans);
 
-    gp_Ax1 ax6(gp_Pnt(525,0,890),gp_Dir(1,0,0));
     trans.SetRotation(GeneralAx6,getJoint06CurrentAngle());
     m_context->SetLocation( RobotAISShape[6],trans);
 
+    setJointAngle();
     m_context->UpdateCurrentViewer();
 
 }

@@ -128,6 +128,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     QObject::connect(buttonRobotHome,&QPushButton::clicked,this,[&]{
         occWidget->RobotBackHome();
+        angleTextShow();
     });
 
 
@@ -242,13 +243,7 @@ MainWindow::MainWindow(QWidget* parent) :
             occWidget->JointSpaceMotion();
             angleTextShow();
             QApplication::processEvents();
-        }
-        //auto func1 = std::bind(&OccView::JointSpaceMotion, occWidget, angles[0], angles[1], angles[2], angles[3], angles[4], angles[5]);
-        //std::thread t1(func1);
-        //auto func2 = std::bind(&MainWindow::angleTextShow, this);
-        //std::thread t2(func2);
-        //t1.join();
-        //t2.join();
+            }
         });
 }
 
