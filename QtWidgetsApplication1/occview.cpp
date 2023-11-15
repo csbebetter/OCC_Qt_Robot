@@ -32,6 +32,13 @@ OccView::OccView(QWidget *parent) : QWidget(parent)
     m_contextMenu->addAction(m_addAction);
     m_contextMenu->addAction(m_delAction);
 
+    M.resize(4, 4);
+    Slist.resize(6, 6);
+    ThetaList.resize(6);
+    M << 0, 0, 1, 579.28,
+         0, 0, 0, 0,
+        -1, 0, 0, 890,
+         0, 0, 0, 1;
 
     KukaAx1=gp_Ax1(gp_Pnt(0,0,0),gp_Dir(0,0,1));
     KukaAx2=gp_Ax1(gp_Pnt(25,0,400),gp_Dir(0,1,0));
@@ -64,9 +71,55 @@ OccView::OccView(QWidget *parent) : QWidget(parent)
     GeneralAx5=KukaAx5;
     GeneralAx6=KukaAx6;
 #endif
-
+    InitAxJoint();
 }
 
+void OccView::InitAxJoint()
+{
+    Eigen::Vector3d Ax1omega(3); Eigen::Vector3d Ax1q(3);
+    Ax1omega << GeneralAx1.Direction().X(), GeneralAx1.Direction().Y(), GeneralAx1.Direction().Z();
+    Ax1q << GeneralAx1.Location().X(), GeneralAx1.Location().Y(), GeneralAx1.Location().Z();
+    Eigen::Vector3d Ax1v = -Ax1omega.cross(Ax1q);
+    Eigen::VectorXd Ax1S = Eigen::VectorXd::Zero(Ax1omega.size() + Ax1v.size());
+    Ax1S << Ax1omega, Ax1v;
+
+    Eigen::Vector3d Ax2omega(3); Eigen::Vector3d Ax2q(3);
+    Ax2omega << GeneralAx2.Direction().X(), GeneralAx2.Direction().Y(), GeneralAx2.Direction().Z();
+    Ax2q << GeneralAx2.Location().X(), GeneralAx2.Location().Y(), GeneralAx2.Location().Z();
+    Eigen::Vector3d Ax2v = -Ax2omega.cross(Ax2q);
+    Eigen::VectorXd Ax2S = Eigen::VectorXd::Zero(Ax2omega.size() + Ax2v.size());
+    Ax2S << Ax2omega, Ax2v;
+
+    Eigen::Vector3d Ax3omega(3); Eigen::Vector3d Ax3q(3);
+    Ax3omega << GeneralAx3.Direction().X(), GeneralAx3.Direction().Y(), GeneralAx3.Direction().Z();
+    Ax3q << GeneralAx3.Location().X(), GeneralAx3.Location().Y(), GeneralAx3.Location().Z();
+    Eigen::Vector3d Ax3v = -Ax3omega.cross(Ax3q);
+    Eigen::VectorXd Ax3S = Eigen::VectorXd::Zero(Ax3omega.size() + Ax3v.size());
+    Ax3S << Ax3omega, Ax3v;
+
+    Eigen::Vector3d Ax4omega(3); Eigen::Vector3d Ax4q(3);
+    Ax4omega << GeneralAx4.Direction().X(), GeneralAx4.Direction().Y(), GeneralAx4.Direction().Z();
+    Ax4q << GeneralAx4.Location().X(), GeneralAx4.Location().Y(), GeneralAx4.Location().Z();
+    Eigen::Vector3d Ax4v = -Ax4omega.cross(Ax4q);
+    Eigen::VectorXd Ax4S = Eigen::VectorXd::Zero(Ax4omega.size() + Ax4v.size());
+    Ax4S << Ax4omega, Ax4v;
+
+    Eigen::Vector3d Ax5omega(3); Eigen::Vector3d Ax5q(3);
+    Ax5omega << GeneralAx5.Direction().X(), GeneralAx5.Direction().Y(), GeneralAx5.Direction().Z();
+    Ax5q << GeneralAx5.Location().X(), GeneralAx5.Location().Y(), GeneralAx5.Location().Z();
+    Eigen::Vector3d Ax5v = -Ax5omega.cross(Ax5q);
+    Eigen::VectorXd Ax5S = Eigen::VectorXd::Zero(Ax5omega.size() + Ax5v.size());
+    Ax5S << Ax5omega, Ax5v;
+
+    Eigen::Vector3d Ax6omega(3); Eigen::Vector3d Ax6q(3);
+    Ax6omega << GeneralAx6.Direction().X(), GeneralAx6.Direction().Y(), GeneralAx6.Direction().Z();
+    Ax6q << GeneralAx6.Location().X(), GeneralAx6.Location().Y(), GeneralAx6.Location().Z();
+    Eigen::Vector3d Ax6v = -Ax6omega.cross(Ax6q);
+    Eigen::VectorXd Ax6S = Eigen::VectorXd::Zero(Ax6omega.size() + Ax6v.size());
+    Ax6S << Ax6omega, Ax6v;
+
+    Slist << Ax1S, Ax2S, Ax3S, Ax4S, Ax5S, Ax6S;
+}
 void OccView::paintEvent(QPaintEvent *)
 {
     m_view->Redraw();
@@ -179,18 +232,18 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
             TDF_Label Label00 = components.Value(i);
             /*auto shape=ShapeTool->GetShape(Label00);*/
             Tree.childName.push_back(Ui::GetLabelName(Label00));
-            RobotAISShape[i - 1]=new XCAFPrs_AISObject(Label00);
-            m_context->Display(RobotAISShape[i-1],true);
+            RobotAISObject[i - 1]=new XCAFPrs_AISObject(Label00);
+            m_context->Display(RobotAISObject[i-1],true);
             getView()->FitAll();
         }
 
-        RobotAISShape[6]->AddChild(RobotAISShape[7]);
-        RobotAISShape[5]->AddChild(RobotAISShape[6]);
-        RobotAISShape[4]->AddChild(RobotAISShape[5]);
-        RobotAISShape[3]->AddChild(RobotAISShape[4]);
-        RobotAISShape[2]->AddChild(RobotAISShape[3]);
-        RobotAISShape[1]->AddChild(RobotAISShape[2]);
-        RobotAISShape[0]->AddChild(RobotAISShape[1]);
+        RobotAISObject[6]->AddChild(RobotAISObject[7]);
+        RobotAISObject[5]->AddChild(RobotAISObject[6]);
+        RobotAISObject[4]->AddChild(RobotAISObject[5]);
+        RobotAISObject[3]->AddChild(RobotAISObject[4]);
+        RobotAISObject[2]->AddChild(RobotAISObject[3]);
+        RobotAISObject[1]->AddChild(RobotAISObject[2]);
+        RobotAISObject[0]->AddChild(RobotAISObject[1]);
     }
     
 #ifdef KR6
@@ -228,25 +281,25 @@ void OccView::initKR6()
 
     gp_Trsf trans;
     trans.SetRotation(GeneralAx1,angle01);
-    m_context->SetLocation(RobotAISShape[1],trans);
+    m_context->SetLocation(RobotAISObject[1],trans);
 
     trans.SetRotation(GeneralAx2,angle02);
-    m_context->SetLocation(RobotAISShape[2],trans);
+    m_context->SetLocation(RobotAISObject[2],trans);
 
     trans.SetRotation(GeneralAx3,angle03);
-    m_context->SetLocation(RobotAISShape[3],trans);
+    m_context->SetLocation(RobotAISObject[3],trans);
 
     trans.SetRotation(GeneralAx4,angle04);
-    m_context->SetLocation(RobotAISShape[4],trans);
+    m_context->SetLocation(RobotAISObject[4],trans);
 
     trans.SetRotation(GeneralAx5,angle05);
-    m_context->SetLocation(RobotAISShape[5],trans);
-
+    m_context->SetLocation(RobotAISObject[5],trans);
 
     trans.SetRotation(GeneralAx6,angle06);
-    m_context->SetLocation(RobotAISShape[6],trans);
+    m_context->SetLocation(RobotAISObject[6],trans);
 
-    setJointAngle();
+    getThetaList() << getJoint01CurrentAngle(), getJoint02CurrentAngle(), getJoint03CurrentAngle(), getJoint04CurrentAngle(), getJoint05CurrentAngle(), getJoint06CurrentAngle();
+    getToolPositionNow() = mr::se3ToVec(M);
     m_context->UpdateCurrentViewer();
 }
 
@@ -539,70 +592,42 @@ void OccView::RobotBackHome()
     
     gp_Trsf trans;
     trans.SetRotation(GeneralAx1,getJoint01CurrentAngle());
-    m_context->SetLocation( RobotAISShape[1],trans);
+    m_context->SetLocation( RobotAISObject[1],trans);
 
     trans.SetRotation(GeneralAx2,getJoint02CurrentAngle());
-    m_context->SetLocation( RobotAISShape[2],trans);
+    m_context->SetLocation( RobotAISObject[2],trans);
 
     trans.SetRotation(GeneralAx3,getJoint03CurrentAngle());
-    m_context->SetLocation( RobotAISShape[3],trans);
+    m_context->SetLocation( RobotAISObject[3],trans);
 
     trans.SetRotation(GeneralAx4,getJoint04CurrentAngle());
-    m_context->SetLocation( RobotAISShape[4],trans);
+    m_context->SetLocation( RobotAISObject[4],trans);
 
     trans.SetRotation(GeneralAx5,getJoint05CurrentAngle());
-    m_context->SetLocation( RobotAISShape[5],trans);
+    m_context->SetLocation( RobotAISObject[5],trans);
 
     trans.SetRotation(GeneralAx6,getJoint06CurrentAngle());
-    m_context->SetLocation( RobotAISShape[6],trans);
+    m_context->SetLocation( RobotAISObject[6],trans);
 
-    setJointAngle();
+    getThetaList() << getJoint01CurrentAngle(), getJoint02CurrentAngle(), getJoint03CurrentAngle(), getJoint04CurrentAngle(), getJoint05CurrentAngle(), getJoint06CurrentAngle();
+    getToolPositionNow() = mr::se3ToVec(M);
+
     m_context->UpdateCurrentViewer();
-
 }
 
 void OccView::JointSpaceMotion() {
-    //double num = 1000;
-    //double a1 = (angle1 - getJoint01CurrentAngle())/num;
-    //double a2 = (angle2 - getJoint02CurrentAngle())/num;
-    //double a3 = (angle3 - getJoint03CurrentAngle())/num;
-    //double a4 = (angle4 - getJoint04CurrentAngle())/num;
-    //double a5 = (angle5 - getJoint05CurrentAngle())/num;
-    //double a6 = (angle6 - getJoint06CurrentAngle())/num;
-    //for (int i = 0; i < num; i++) {
-        //getJoint01CurrentAngle() += a1;
-        //getJoint02CurrentAngle() += a2;
-        //getJoint03CurrentAngle() += a3;
-        //getJoint04CurrentAngle() += a4;
-        //getJoint05CurrentAngle() += a5;
-        //getJoint06CurrentAngle() += a6;
-
         gp_Trsf trans;
         trans.SetRotation(GeneralAx1, getJoint01CurrentAngle());
-        m_context->SetLocation(RobotAISShape[1], trans);
+        m_context->SetLocation(RobotAISObject[1], trans);
         trans.SetRotation(GeneralAx2, getJoint02CurrentAngle());
-        m_context->SetLocation(RobotAISShape[2], trans);
+        m_context->SetLocation(RobotAISObject[2], trans);
         trans.SetRotation(GeneralAx3, getJoint03CurrentAngle());
-        m_context->SetLocation(RobotAISShape[3], trans);
+        m_context->SetLocation(RobotAISObject[3], trans);
         trans.SetRotation(GeneralAx4, getJoint04CurrentAngle());
-        m_context->SetLocation(RobotAISShape[4], trans);
+        m_context->SetLocation(RobotAISObject[4], trans);
         trans.SetRotation(GeneralAx5, getJoint05CurrentAngle());
-        m_context->SetLocation(RobotAISShape[5], trans);
+        m_context->SetLocation(RobotAISObject[5], trans);
         trans.SetRotation(GeneralAx6, getJoint06CurrentAngle());
-        m_context->SetLocation(RobotAISShape[6], trans);
-        setJointAngle();
+        m_context->SetLocation(RobotAISObject[6], trans);
         m_context->UpdateCurrentViewer();
-    /*}*/
-}
-
-void OccView::setJointAngle()
-{
-    Ui::JointAngle jointnow;
-    jointnow.angle1 = getJoint01CurrentAngle();
-    jointnow.angle2 = getJoint02CurrentAngle();
-    jointnow.angle3 = getJoint03CurrentAngle();
-    jointnow.angle4 = getJoint04CurrentAngle();
-    jointnow.angle5 = getJoint05CurrentAngle();
-    jointnow.angle6 = getJoint06CurrentAngle();
-    getJointAngle() = jointnow;
 }

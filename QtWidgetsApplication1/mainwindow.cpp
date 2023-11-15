@@ -128,7 +128,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     QObject::connect(buttonRobotHome,&QPushButton::clicked,this,[&]{
         occWidget->RobotBackHome();
-        angleTextShow();
+        stateTextShow();
     });
 
 
@@ -137,43 +137,93 @@ MainWindow::MainWindow(QWidget* parent) :
     /*****tabWidgetPage2******/
     /*****tabWidgetPage2******/
 
-    EditPartXCoor=new QLineEdit(this);
-    EditPartYCoor=new QLineEdit(this);
-    EditPartZCoor=new QLineEdit(this);
-    EditPartRXCoor=new QLineEdit(this);
-    EditPartRYCoor=new QLineEdit(this);
-    EditPartRZCoor=new QLineEdit(this);
+    EditPartRXCoor = new QLineEdit(this);
+    EditPartRYCoor = new QLineEdit(this);
+    EditPartRZCoor = new QLineEdit(this);
+    EditPartXCoor = new QLineEdit(this);
+    EditPartYCoor = new QLineEdit(this);
+    EditPartZCoor = new QLineEdit(this);
 
-    EditPartXCoor->setPlaceholderText(tr("X:"));
-    EditPartYCoor->setPlaceholderText(tr("Y:"));
-    EditPartZCoor->setPlaceholderText(tr("Z:"));
     EditPartRXCoor->setPlaceholderText(tr("RX:"));
     EditPartRYCoor->setPlaceholderText(tr("RY:"));
     EditPartRZCoor->setPlaceholderText(tr("RZ:"));
+    EditPartXCoor->setPlaceholderText(tr("X:"));
+    EditPartYCoor->setPlaceholderText(tr("Y:"));
+    EditPartZCoor->setPlaceholderText(tr("Z:"));
+
 
 
     auto buttonPartCoorOK=new QPushButton(this);
     buttonPartCoorOK->setText(tr("PartCoordinateOK"));
     QVBoxLayout *layout06=new QVBoxLayout(this);
-    layout06->addWidget(EditPartXCoor);
-    layout06->addWidget(EditPartYCoor);
-    layout06->addWidget(EditPartZCoor);
     layout06->addWidget(EditPartRXCoor);
     layout06->addWidget(EditPartRYCoor);
     layout06->addWidget(EditPartRZCoor);
+    layout06->addWidget(EditPartXCoor);
+    layout06->addWidget(EditPartYCoor);
+    layout06->addWidget(EditPartZCoor);
     layout06->addWidget(buttonPartCoorOK);
     ui->tabWidgetPage2->setLayout(layout06);
 
-
     QObject::connect(buttonPartCoorOK,&QPushButton::clicked,this,[&]{
-        Ui::EularCoor eularcoor;
-        eularcoor.x=EditPartXCoor->text().toDouble();
-        eularcoor.y=EditPartYCoor->text().toDouble();
-        eularcoor.z=EditPartZCoor->text().toDouble();
-        eularcoor.rx=EditPartRXCoor->text().toDouble()*PI/180;
-        eularcoor.ry=EditPartRYCoor->text().toDouble()*PI/180;
-        eularcoor.rz=EditPartRZCoor->text().toDouble()*PI/180;
-        occWidget->getPartCoor()=eularcoor;
+        Eigen::VectorXd eularcoor(6);
+        eularcoor[0] = EditPartRXCoor->text().toDouble();
+        eularcoor[1] = EditPartRYCoor->text().toDouble();
+        eularcoor[2] = EditPartRZCoor->text().toDouble();
+        eularcoor[3] = EditPartXCoor->text().toDouble();
+        eularcoor[4] = EditPartYCoor->text().toDouble();
+        eularcoor[5] = EditPartZCoor->text().toDouble();
+
+        Eigen::MatrixXd e = mr::VecTose3(eularcoor);
+        Eigen::VectorXd theta_result(6); 
+        theta_result = occWidget->getThetaList();
+        bool result = mr::IKinSpace(occWidget->Slist, occWidget->M, e, theta_result, 1, 1);
+        if (result) {
+            double num = 1000;
+            double a1 = (theta_result[0] - occWidget->getJoint01CurrentAngle()) / num;
+            double a2 = (theta_result[1] - occWidget->getJoint02CurrentAngle()) / num;
+            double a3 = (theta_result[2] - occWidget->getJoint03CurrentAngle()) / num;
+            double a4 = (theta_result[3] - occWidget->getJoint04CurrentAngle()) / num;
+            double a5 = (theta_result[4] - occWidget->getJoint05CurrentAngle()) / num;
+            double a6 = (theta_result[5] - occWidget->getJoint06CurrentAngle()) / num;
+            for (int i = 0; i < num; i++) {
+                occWidget->getJoint01CurrentAngle() += a1;
+                occWidget->getJoint02CurrentAngle() += a2;
+                occWidget->getJoint03CurrentAngle() += a3;
+                occWidget->getJoint04CurrentAngle() += a4;
+                occWidget->getJoint05CurrentAngle() += a5;
+                occWidget->getJoint06CurrentAngle() += a6;
+                occWidget->JointSpaceMotion();
+                occWidget->getThetaList() << occWidget->getJoint01CurrentAngle(),
+                    occWidget->getJoint02CurrentAngle(),
+                    occWidget->getJoint03CurrentAngle(),
+                    occWidget->getJoint04CurrentAngle(),
+                    occWidget->getJoint05CurrentAngle(),
+                    occWidget->getJoint06CurrentAngle();
+                Eigen::MatrixXd pos = mr::FKinSpace(occWidget->M, occWidget->Slist, occWidget->getThetaList());
+                occWidget->getToolPositionNow() = mr::se3ToVec(pos);
+                stateTextShow();
+                QApplication::processEvents();
+            }
+        }
+        else {
+            QDialog* dialog = new QDialog(this);
+            /*dialog->setAttribute(Qt::WA_DeleteOnClose);*/
+            dialog->setWindowTitle(tr("error:0011"));
+            dialog->setFixedSize(650, 300);
+            QLabel* softwareNameLabel = new QLabel(QStringLiteral("机器人运动学逆解不可求"), this);
+            // 设置 QLabel 的对齐方式
+            softwareNameLabel->setAlignment(Qt::AlignCenter);
+            // 创建布局管理器
+            QVBoxLayout* layout = new QVBoxLayout(this);
+            // 将 QLabel 添加到布局中
+            layout->addWidget(softwareNameLabel);
+            // 设置布局管理器为对话框的布局
+            dialog->setLayout(layout);
+            dialog->show();
+            //显示新窗口
+        }
+        
     });
 
 
@@ -241,7 +291,15 @@ MainWindow::MainWindow(QWidget* parent) :
             occWidget->getJoint05CurrentAngle() += a5;
             occWidget->getJoint06CurrentAngle() += a6;
             occWidget->JointSpaceMotion();
-            angleTextShow();
+            occWidget->getThetaList() << occWidget->getJoint01CurrentAngle(),
+                occWidget->getJoint02CurrentAngle(), 
+                occWidget->getJoint03CurrentAngle(), 
+                occWidget->getJoint04CurrentAngle(), 
+                occWidget->getJoint05CurrentAngle(), 
+                occWidget->getJoint06CurrentAngle();
+            Eigen::MatrixXd pos = mr::FKinSpace(occWidget->M, occWidget->Slist, occWidget->getThetaList());
+            occWidget->getToolPositionNow() = mr::se3ToVec(pos);
+            stateTextShow();
             QApplication::processEvents();
             }
         });
@@ -272,15 +330,24 @@ void MainWindow::TreeWidget_Init(Ui::STEPTree LeftTree)
     ui->treeWidget->expandAll();   //设置item全部展开
 }
 
-void MainWindow::angleTextShow() 
-{
-    Ui::JointAngle robotJointnow = occWidget->getJointAngle();
-    angleText->setPlainText(QString::number(robotJointnow.angle1 / PI * 180, 'f', 2) + " , " +
-        QString::number(robotJointnow.angle2 / PI * 180.0, 'f', 2) + " , " +
-        QString::number(robotJointnow.angle3 / PI * 180.0, 'f', 2) + " , " +
-        QString::number(robotJointnow.angle4 / PI * 180.0, 'f', 2) + " , " +
-        QString::number(robotJointnow.angle5 / PI * 180.0, 'f', 2) + " , " +
-        QString::number(robotJointnow.angle6 / PI * 180.0, 'f', 2)
+
+
+void MainWindow::stateTextShow() {
+    Eigen::VectorXd robotJointnow = occWidget->getThetaList();
+    angleText->setPlainText(QString::number(robotJointnow[0] / PI * 180, 'f', 2) + " , " +
+        QString::number(robotJointnow[1] / PI * 180.0, 'f', 2) + " , " +
+        QString::number(robotJointnow[2] / PI * 180.0, 'f', 2) + " , " +
+        QString::number(robotJointnow[3] / PI * 180.0, 'f', 2) + " , " +
+        QString::number(robotJointnow[4] / PI * 180.0, 'f', 2) + " , " +
+        QString::number(robotJointnow[5] / PI * 180.0, 'f', 2)
+    );
+    Eigen::VectorXd ToolPosition = occWidget->getToolPositionNow();
+    coorText->setPlainText(QString::number(ToolPosition[0], 'f', 2) + " , " +
+        QString::number(ToolPosition[1], 'f', 2) + " , " +
+        QString::number(ToolPosition[2], 'f', 2) + " , " +
+        QString::number(ToolPosition[3], 'f', 2) + " , " +
+        QString::number(ToolPosition[4], 'f', 2) + " , " +
+        QString::number(ToolPosition[5], 'f', 2)
     );
 }
 
@@ -319,7 +386,7 @@ void MainWindow::on_actionRbtImport_triggered()
         qDebug()<<"path:"<<occWidget->robotPath;
         occWidget->loadDisplayRobotWhole(LeftTree);
         TreeWidget_Init(LeftTree);
-        angleTextShow();
+        stateTextShow();
     }
     else
     {

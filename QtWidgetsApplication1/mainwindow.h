@@ -27,7 +27,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void TreeWidget_Init(Ui::STEPTree LeftTree);
-    void angleTextShow();
+    void stateTextShow();
 
 private slots:
     //QtCreator默认的on_Qaction_triggered方法，自动帮你完成了connect（不推荐改写法，建议使用connect）

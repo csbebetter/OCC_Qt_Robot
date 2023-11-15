@@ -12,6 +12,7 @@
 #include <QEasingCurve>
 #include <QThread>
 #include <QtCore/QString>
+#include <modern_robotics.h>
 
 
 #define BUTTON_ON true
@@ -164,43 +165,18 @@ public:
 
     void RobotBackHome();
 
-    //void ButtonAxis01MoveForward();
-    //void ButtonAxis02MoveForward();
-    //void ButtonAxis03MoveForward();
-    //void ButtonAxis04MoveForward();
-    //void ButtonAxis05MoveForward();
-    //void ButtonAxis06MoveForward();
-    //void ButtonAxis01MoveBackward();
-    //void ButtonAxis02MoveBackward();
-    //void ButtonAxis03MoveBackward();
-    //void ButtonAxis04MoveBackward();
-    //void ButtonAxis05MoveBackward();
-    //void ButtonAxis06MoveBackward();
-    //void ButtonTranXMoveForward();
-    //void ButtonTranYMoveForward();
-    //void ButtonTranZMoveForward();
-    //void ButtonTranRXMoveForward();
-    //void ButtonTranRYMoveForward();
-    //void ButtonTranRZMoveForward();
-    //void ButtonTranXMoveBackward();
-    //void ButtonTranYMoveBackward();
-    //void ButtonTranZMoveBackward();
-    //void ButtonTranRXMoveBackward();
-    //void ButtonTranRYMoveBackward();
-    //void ButtonTranRZMoveBackward();
-
-
     double& getJoint01CurrentAngle(){return Joint01CurrentAngle;}
     double& getJoint02CurrentAngle(){return Joint02CurrentAngle;}
     double& getJoint03CurrentAngle(){return Joint03CurrentAngle;}
     double& getJoint04CurrentAngle(){return Joint04CurrentAngle;}
     double& getJoint05CurrentAngle(){return Joint05CurrentAngle;}
     double& getJoint06CurrentAngle(){return Joint06CurrentAngle;}
-    Ui::EularCoor& getPartCoor(){return part0Coordinate;}
-    Ui::JointAngle& getJointAngle() { return robotAllAngle; }
+    /*Ui::EularCoor& getPartCoor(){return part0Coordinate;}*/
+    Eigen::VectorXd& getThetaList() { return ThetaList; }
+    Eigen::VectorXd& getToolPositionNow() { return ToolPositionNow;}
 
     void JointSpaceMotion();
-    void setJointAngle();
+    void InitAxJoint();
 
 private:
     void InitView();
@@ -215,7 +191,7 @@ private:
     bool faceSelect{false};
     std::vector<Handle(AIS_Shape)> NormalVector;
     Handle_Graphic3d_Camera cameraStart,cameraEnd;
-    Handle(XCAFPrs_AISObject)RobotAISShape[8];//机器人的shape
+    Handle(XCAFPrs_AISObject)RobotAISObject[8];//机器人的shape
     //Handle(XCAFPrs_AISObject)RobotAISObject[8];//机器人的Object
     Handle_AIS_Shape PartAISShape;//工件的shape
     Handle_AIS_Shape ToolAISShape;//工具的shape
@@ -225,7 +201,7 @@ private:
     gp_Ax2 tool0Ax2;
     gp_Ax2 part0Ax2;
     Ui::EularCoor part0Coordinate,originPart0Coordinate;
-    Ui::JointAngle robotAllAngle;
+    /*Ui::JointAngle robotAllAngle;*/
     Handle(Geom_Axis2Placement) PartTrihedronAxis;
 
     //右键菜单
@@ -248,9 +224,13 @@ private:
     gp_Ax1 KukaAx1,KukaAx2,KukaAx3,KukaAx4,KukaAx5,KukaAx6;
     gp_Ax1 UR5Ax1,UR5Ax2,UR5Ax3,UR5Ax4,UR5Ax5,UR5Ax6;
     gp_Ax1 GeneralAx1,GeneralAx2,GeneralAx3,GeneralAx4,GeneralAx5,GeneralAx6;
+    Eigen::VectorXd ThetaList;
+    Eigen::VectorXd ToolPositionNow;
 
 public:
     OCAFBrowser *ocaf;
+    Eigen::MatrixXd M;
+    Eigen::MatrixXd Slist;
 };
 
 #endif // OCCVIEW_H
