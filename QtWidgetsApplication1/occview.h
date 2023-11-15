@@ -12,8 +12,7 @@
 #include <QEasingCurve>
 #include <QThread>
 #include <QtCore/QString>
-//#include <modern_robotics.h>
-//#include "myfunc.h"
+
 
 #define BUTTON_ON true
 #define BUTTON_OFF false
