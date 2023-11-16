@@ -173,11 +173,15 @@ MainWindow::MainWindow(QWidget* parent) :
         eularcoor[3] = EditPartXCoor->text().toDouble();
         eularcoor[4] = EditPartYCoor->text().toDouble();
         eularcoor[5] = EditPartZCoor->text().toDouble();
+        Eigen::Vector3d e3 = eularcoor.segment(0, 3);
+        Eigen::Vector3d p3 = eularcoor.segment(3, 3);
+        Eigen::MatrixXd e3x3/* = ypr2R(e3)*/;
+        Eigen::MatrixXd R(4, 4);
+        R << e3x3, p3, 0, 0, 0, 1;
 
-        Eigen::MatrixXd e = mr::VecTose3(eularcoor);
         Eigen::VectorXd theta_result(6); 
         theta_result = occWidget->getThetaList();
-        bool result = mr::IKinSpace(occWidget->Slist, occWidget->M, e, theta_result, 1, 1);
+        bool result = mr::IKinSpace(occWidget->Slist, occWidget->M, R, theta_result, 0.00001, 0.00001);
         if (result) {
             double num = 1000;
             double a1 = (theta_result[0] - occWidget->getJoint01CurrentAngle()) / num;
@@ -201,7 +205,11 @@ MainWindow::MainWindow(QWidget* parent) :
                     occWidget->getJoint05CurrentAngle(),
                     occWidget->getJoint06CurrentAngle();
                 Eigen::MatrixXd pos = mr::FKinSpace(occWidget->M, occWidget->Slist, occWidget->getThetaList());
-                occWidget->getToolPositionNow() = mr::se3ToVec(pos);
+                Eigen::Matrix3d M33 = pos.block(0, 0, 3, 3);
+                Eigen::VectorXd M6(6);
+                //M6 << R2ypr(M33), pos.block(0, 3, 3, 1);
+                occWidget->getToolPositionNow() = M6;
+
                 stateTextShow();
                 QApplication::processEvents();
             }
@@ -298,7 +306,11 @@ MainWindow::MainWindow(QWidget* parent) :
                 occWidget->getJoint05CurrentAngle(), 
                 occWidget->getJoint06CurrentAngle();
             Eigen::MatrixXd pos = mr::FKinSpace(occWidget->M, occWidget->Slist, occWidget->getThetaList());
-            occWidget->getToolPositionNow() = mr::se3ToVec(pos);
+
+            Eigen::Matrix3d M33 = pos.block(0, 0, 3, 3);
+            occWidget->getToolQuaternionNow() = R2quaternion(M33);
+            occWidget->getToolPositionNow() = pos.block(0, 3, 3, 1);
+
             stateTextShow();
             QApplication::processEvents();
             }
@@ -341,13 +353,15 @@ void MainWindow::stateTextShow() {
         QString::number(robotJointnow[4] / PI * 180.0, 'f', 2) + " , " +
         QString::number(robotJointnow[5] / PI * 180.0, 'f', 2)
     );
-    Eigen::VectorXd ToolPosition = occWidget->getToolPositionNow();
-    coorText->setPlainText(QString::number(ToolPosition[0], 'f', 2) + " , " +
+    Eigen::Vector3d ToolPosition = occWidget->getToolPositionNow();
+    Eigen::Quaterniond ToolQuaternion = occWidget->getToolQuaternionNow();
+    coorText->setPlainText(QString::number(ToolQuaternion.w(), 'f', 2) + " + " +
+        QString::number(ToolQuaternion.x(), 'f', 2) + " i+ " +
+        QString::number(ToolQuaternion.y(), 'f', 2) + " j+ " +
+        QString::number(ToolQuaternion.z(), 'f', 2) + " k , " +
+        QString::number(ToolPosition[0], 'f', 2) + " , " +
         QString::number(ToolPosition[1], 'f', 2) + " , " +
-        QString::number(ToolPosition[2], 'f', 2) + " , " +
-        QString::number(ToolPosition[3], 'f', 2) + " , " +
-        QString::number(ToolPosition[4], 'f', 2) + " , " +
-        QString::number(ToolPosition[5], 'f', 2)
+        QString::number(ToolPosition[2], 'f', 2)
     );
 }
 

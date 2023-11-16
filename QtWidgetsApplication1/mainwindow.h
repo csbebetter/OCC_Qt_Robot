@@ -13,6 +13,7 @@
 #include <QPlainTextEdit>
 #include <QDialog>
 #include <QLabel>
+#include <iostream>
 
 
 namespace Ui {

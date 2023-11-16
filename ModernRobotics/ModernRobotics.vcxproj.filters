@@ -18,9 +18,15 @@
     <ClInclude Include="modern_robotics.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="R_quaternion.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="modern_robotics.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="R_quaternion.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

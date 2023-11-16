@@ -13,6 +13,7 @@
 #include <QThread>
 #include <QtCore/QString>
 #include <modern_robotics.h>
+#include <R_quaternion.h>
 
 
 #define BUTTON_ON true
@@ -173,7 +174,8 @@ public:
     double& getJoint06CurrentAngle(){return Joint06CurrentAngle;}
     /*Ui::EularCoor& getPartCoor(){return part0Coordinate;}*/
     Eigen::VectorXd& getThetaList() { return ThetaList; }
-    Eigen::VectorXd& getToolPositionNow() { return ToolPositionNow;}
+    Eigen::Vector3d& getToolPositionNow() { return ToolPositionNow;}
+    Eigen::Quaterniond& getToolQuaternionNow() { return ToolQuaternionNow; }
 
     void JointSpaceMotion();
     void InitAxJoint();
@@ -225,7 +227,8 @@ private:
     gp_Ax1 UR5Ax1,UR5Ax2,UR5Ax3,UR5Ax4,UR5Ax5,UR5Ax6;
     gp_Ax1 GeneralAx1,GeneralAx2,GeneralAx3,GeneralAx4,GeneralAx5,GeneralAx6;
     Eigen::VectorXd ThetaList;
-    Eigen::VectorXd ToolPositionNow;
+    Eigen::Vector3d ToolPositionNow;
+    Eigen::Quaterniond ToolQuaternionNow;
 
 public:
     OCAFBrowser *ocaf;

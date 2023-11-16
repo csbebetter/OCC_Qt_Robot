@@ -36,7 +36,7 @@ OccView::OccView(QWidget *parent) : QWidget(parent)
     Slist.resize(6, 6);
     ThetaList.resize(6);
     M << 0, 0, 1, 579.28,
-         0, 0, 0, 0,
+         0, 1, 0, 0,
         -1, 0, 0, 890,
          0, 0, 0, 1;
 
@@ -230,13 +230,34 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
 
         for (int i=1;i<=components.Length();i++) {
             TDF_Label Label00 = components.Value(i);
-            /*auto shape=ShapeTool->GetShape(Label00);*/
             Tree.childName.push_back(Ui::GetLabelName(Label00));
             RobotAISObject[i - 1]=new XCAFPrs_AISObject(Label00);
             m_context->Display(RobotAISObject[i-1],true);
             getView()->FitAll();
         }
 
+        gp_Ax2 axisdefine = gp_Ax2(gp_Pnt(579.28, 0, 890), gp_Dir(1, 0, 0), gp_Dir(0, 0, -1));
+        Handle_Geom_Axis2Placement axis = new Geom_Axis2Placement(axisdefine);
+        Handle_AIS_Trihedron aisTrihedron = new AIS_Trihedron(axis);
+        aisTrihedron->SetDatumDisplayMode(Prs3d_DM_WireFrame);
+        aisTrihedron->SetDrawArrows(false);
+        aisTrihedron->Attributes()->DatumAspect()->LineAspect(Prs3d_DP_XAxis)->SetWidth(2.5);
+        aisTrihedron->Attributes()->DatumAspect()->LineAspect(Prs3d_DP_YAxis)->SetWidth(2.5);
+        aisTrihedron->Attributes()->DatumAspect()->LineAspect(Prs3d_DP_ZAxis)->SetWidth(2.5);
+        aisTrihedron->SetDatumPartColor(Prs3d_DP_XAxis, Quantity_NOC_RED2);
+        aisTrihedron->SetDatumPartColor(Prs3d_DP_YAxis, Quantity_NOC_GREEN2);
+        aisTrihedron->SetDatumPartColor(Prs3d_DP_ZAxis, Quantity_NOC_BLUE2);
+        aisTrihedron->SetLabel(Prs3d_DP_XAxis, "X");
+        aisTrihedron->SetLabel(Prs3d_DP_YAxis, "Y");
+        aisTrihedron->SetLabel(Prs3d_DP_ZAxis, "Z");
+        aisTrihedron->SetTextColor(Quantity_NOC_GRAY40);
+        aisTrihedron->SetSize(60);
+        //aisTrihedron->SetTransformPersistence(new Graphic3d_TransformPers(Graphic3d_TMF_ZoomPers, axis->Ax2().Location()));
+        aisTrihedron->Attributes()->SetZLayer(Graphic3d_ZLayerId_Topmost);
+        aisTrihedron->SetInfiniteState(true);
+        m_context->Display(aisTrihedron, true);
+
+        RobotAISObject[7]->AddChild(aisTrihedron);
         RobotAISObject[6]->AddChild(RobotAISObject[7]);
         RobotAISObject[5]->AddChild(RobotAISObject[6]);
         RobotAISObject[4]->AddChild(RobotAISObject[5]);
@@ -299,7 +320,9 @@ void OccView::initKR6()
     m_context->SetLocation(RobotAISObject[6],trans);
 
     getThetaList() << getJoint01CurrentAngle(), getJoint02CurrentAngle(), getJoint03CurrentAngle(), getJoint04CurrentAngle(), getJoint05CurrentAngle(), getJoint06CurrentAngle();
-    getToolPositionNow() = mr::se3ToVec(M);
+    Eigen::Matrix3d M33 = M.block(0, 0, 3, 3);
+    getToolQuaternionNow() = R2quaternion(M33);
+    getToolPositionNow() = M.block(0, 3, 3, 1);
     m_context->UpdateCurrentViewer();
 }
 
@@ -610,7 +633,9 @@ void OccView::RobotBackHome()
     m_context->SetLocation( RobotAISObject[6],trans);
 
     getThetaList() << getJoint01CurrentAngle(), getJoint02CurrentAngle(), getJoint03CurrentAngle(), getJoint04CurrentAngle(), getJoint05CurrentAngle(), getJoint06CurrentAngle();
-    getToolPositionNow() = mr::se3ToVec(M);
+    Eigen::Matrix3d M33 = M.block(0, 0, 3, 3);
+    getToolQuaternionNow() = R2quaternion(M33);
+    getToolPositionNow() = M.block(0, 3, 3, 1);
 
     m_context->UpdateCurrentViewer();
 }
