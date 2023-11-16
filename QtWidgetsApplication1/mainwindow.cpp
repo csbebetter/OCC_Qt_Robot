@@ -136,100 +136,120 @@ MainWindow::MainWindow(QWidget* parent) :
     /*****tabWidgetPage2******/
     /*****tabWidgetPage2******/
     /*****tabWidgetPage2******/
+    QLabel* EditlabelCoor1 = new QLabel(QStringLiteral("输入四元数（格式：w x y z）"), this);
+    QLabel* EditlabelCoor2 = new QLabel(QStringLiteral("X:"), this);
+    QLabel* EditlabelCoor3 = new QLabel(QStringLiteral("Y:"), this);
+    QLabel* EditlabelCoor4 = new QLabel(QStringLiteral("Z:"), this);
 
-    EditPartRXCoor = new QLineEdit(this);
-    EditPartRYCoor = new QLineEdit(this);
-    EditPartRZCoor = new QLineEdit(this);
-    EditPartXCoor = new QLineEdit(this);
-    EditPartYCoor = new QLineEdit(this);
-    EditPartZCoor = new QLineEdit(this);
+    EditPartQuatCoor = new QLineEdit("0.717107 0 0.717107 0",this);
+    EditPartXCoor = new QLineEdit("579.28",this);
+    EditPartYCoor = new QLineEdit("0",this);
+    EditPartZCoor = new QLineEdit("890",this);
 
-    EditPartRXCoor->setPlaceholderText(tr("RX:"));
-    EditPartRYCoor->setPlaceholderText(tr("RY:"));
-    EditPartRZCoor->setPlaceholderText(tr("RZ:"));
-    EditPartXCoor->setPlaceholderText(tr("X:"));
-    EditPartYCoor->setPlaceholderText(tr("Y:"));
-    EditPartZCoor->setPlaceholderText(tr("Z:"));
-
-
+    EditPartQuatCoor->setPlaceholderText(QStringLiteral("0.717107 0 0.717107 0"));
+    EditPartXCoor->setPlaceholderText(tr("579.28"));
+    EditPartYCoor->setPlaceholderText(tr("0"));
+    EditPartZCoor->setPlaceholderText(tr("890"));
 
     auto buttonPartCoorOK=new QPushButton(this);
-    buttonPartCoorOK->setText(tr("PartCoordinateOK"));
+    buttonPartCoorOK->setText(QStringLiteral("逆运动开始"));
     QVBoxLayout *layout06=new QVBoxLayout(this);
-    layout06->addWidget(EditPartRXCoor);
-    layout06->addWidget(EditPartRYCoor);
-    layout06->addWidget(EditPartRZCoor);
+    QSpacerItem* hSpacer06 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    layout06->addWidget(EditlabelCoor1);
+    layout06->addWidget(EditPartQuatCoor);
+    layout06->addWidget(EditlabelCoor2);
     layout06->addWidget(EditPartXCoor);
+    layout06->addWidget(EditlabelCoor3);
     layout06->addWidget(EditPartYCoor);
+    layout06->addWidget(EditlabelCoor4);
     layout06->addWidget(EditPartZCoor);
+    layout06->addItem(hSpacer06);
     layout06->addWidget(buttonPartCoorOK);
     ui->tabWidgetPage2->setLayout(layout06);
 
     QObject::connect(buttonPartCoorOK,&QPushButton::clicked,this,[&]{
-        Eigen::VectorXd eularcoor(6);
-        eularcoor[0] = EditPartRXCoor->text().toDouble();
-        eularcoor[1] = EditPartRYCoor->text().toDouble();
-        eularcoor[2] = EditPartRZCoor->text().toDouble();
-        eularcoor[3] = EditPartXCoor->text().toDouble();
-        eularcoor[4] = EditPartYCoor->text().toDouble();
-        eularcoor[5] = EditPartZCoor->text().toDouble();
-        Eigen::Vector3d e3 = eularcoor.segment(0, 3);
-        Eigen::Vector3d p3 = eularcoor.segment(3, 3);
-        Eigen::MatrixXd e3x3/* = ypr2R(e3)*/;
-        Eigen::MatrixXd R(4, 4);
-        R << e3x3, p3, 0, 0, 0, 1;
-
-        Eigen::VectorXd theta_result(6); 
-        theta_result = occWidget->getThetaList();
-        bool result = mr::IKinSpace(occWidget->Slist, occWidget->M, R, theta_result, 0.00001, 0.00001);
-        if (result) {
-            double num = 1000;
-            double a1 = (theta_result[0] - occWidget->getJoint01CurrentAngle()) / num;
-            double a2 = (theta_result[1] - occWidget->getJoint02CurrentAngle()) / num;
-            double a3 = (theta_result[2] - occWidget->getJoint03CurrentAngle()) / num;
-            double a4 = (theta_result[3] - occWidget->getJoint04CurrentAngle()) / num;
-            double a5 = (theta_result[4] - occWidget->getJoint05CurrentAngle()) / num;
-            double a6 = (theta_result[5] - occWidget->getJoint06CurrentAngle()) / num;
-            for (int i = 0; i < num; i++) {
-                occWidget->getJoint01CurrentAngle() += a1;
-                occWidget->getJoint02CurrentAngle() += a2;
-                occWidget->getJoint03CurrentAngle() += a3;
-                occWidget->getJoint04CurrentAngle() += a4;
-                occWidget->getJoint05CurrentAngle() += a5;
-                occWidget->getJoint06CurrentAngle() += a6;
-                occWidget->JointSpaceMotion();
-                occWidget->getThetaList() << occWidget->getJoint01CurrentAngle(),
-                    occWidget->getJoint02CurrentAngle(),
-                    occWidget->getJoint03CurrentAngle(),
-                    occWidget->getJoint04CurrentAngle(),
-                    occWidget->getJoint05CurrentAngle(),
-                    occWidget->getJoint06CurrentAngle();
-                Eigen::MatrixXd pos = mr::FKinSpace(occWidget->M, occWidget->Slist, occWidget->getThetaList());
-                Eigen::Matrix3d M33 = pos.block(0, 0, 3, 3);
-                Eigen::VectorXd M6(6);
-                //M6 << R2ypr(M33), pos.block(0, 3, 3, 1);
-                occWidget->getToolPositionNow() = M6;
-
-                stateTextShow();
-                QApplication::processEvents();
-            }
-        }
-        else {
+        Eigen::Quaterniond toolQuaternion;
+        Eigen::Vector3d toolCoor;
+        QString quaternionString = EditPartQuatCoor->text();
+        std::string quaternionStdString = quaternionString.toStdString();
+        std::istringstream iss(quaternionStdString);
+        iss >> toolQuaternion.w() >> toolQuaternion.x() >> toolQuaternion.y() >> toolQuaternion.z();
+        if (iss.fail()) {
+            qDebug() << "无效的四元数输入";
             QDialog* dialog = new QDialog(this);
-            /*dialog->setAttribute(Qt::WA_DeleteOnClose);*/
-            dialog->setWindowTitle(tr("error:0011"));
-            dialog->setFixedSize(650, 300);
-            QLabel* softwareNameLabel = new QLabel(QStringLiteral("机器人运动学逆解不可求"), this);
-            // 设置 QLabel 的对齐方式
+            dialog->setWindowTitle(tr("error:0013"));
+            dialog->setFixedSize(280, 100);
+            QLabel* softwareNameLabel = new QLabel(QStringLiteral("无效的四元数输入"), this);
             softwareNameLabel->setAlignment(Qt::AlignCenter);
-            // 创建布局管理器
             QVBoxLayout* layout = new QVBoxLayout(this);
-            // 将 QLabel 添加到布局中
             layout->addWidget(softwareNameLabel);
-            // 设置布局管理器为对话框的布局
             dialog->setLayout(layout);
             dialog->show();
-            //显示新窗口
+            toolQuaternion = occWidget->getToolQuaternionNow();
+            toolCoor = occWidget->getToolPositionNow();
+        }
+        else {
+            toolCoor[0] = EditPartXCoor->text().toDouble();
+            toolCoor[1] = EditPartYCoor->text().toDouble();
+            toolCoor[2] = EditPartZCoor->text().toDouble();
+
+
+            Eigen::MatrixXd e3x3 = quaternion2R(toolQuaternion);
+            Eigen::MatrixXd R(4, 4);
+            R << e3x3, toolCoor, 0, 0, 0, 1;
+
+            Eigen::VectorXd theta_result(6);
+            theta_result = occWidget->getThetaList();
+            bool result = mr::IKinSpace(occWidget->Slist, occWidget->M, R, theta_result, 0.00001, 0.00001);
+            if (result) {
+                double num = 1000;
+                double a1 = (theta_result[0] - occWidget->getJoint01CurrentAngle()) / num;
+                double a2 = (theta_result[1] - occWidget->getJoint02CurrentAngle()) / num;
+                double a3 = (theta_result[2] - occWidget->getJoint03CurrentAngle()) / num;
+                double a4 = (theta_result[3] - occWidget->getJoint04CurrentAngle()) / num;
+                double a5 = (theta_result[4] - occWidget->getJoint05CurrentAngle()) / num;
+                double a6 = (theta_result[5] - occWidget->getJoint06CurrentAngle()) / num;
+                for (int i = 0; i < num; i++) {
+                    occWidget->getJoint01CurrentAngle() += a1;
+                    occWidget->getJoint02CurrentAngle() += a2;
+                    occWidget->getJoint03CurrentAngle() += a3;
+                    occWidget->getJoint04CurrentAngle() += a4;
+                    occWidget->getJoint05CurrentAngle() += a5;
+                    occWidget->getJoint06CurrentAngle() += a6;
+                    occWidget->JointSpaceMotion();
+                    occWidget->getThetaList() << occWidget->getJoint01CurrentAngle(),
+                        occWidget->getJoint02CurrentAngle(),
+                        occWidget->getJoint03CurrentAngle(),
+                        occWidget->getJoint04CurrentAngle(),
+                        occWidget->getJoint05CurrentAngle(),
+                        occWidget->getJoint06CurrentAngle();
+                    Eigen::MatrixXd pos = mr::FKinSpace(occWidget->M, occWidget->Slist, occWidget->getThetaList());
+                    Eigen::Matrix3d M33 = pos.block(0, 0, 3, 3);
+
+                    occWidget->getToolQuaternionNow() = R2quaternion(M33);
+                    occWidget->getToolPositionNow() = pos.block(0, 3, 3, 1);
+
+                    stateTextShow();
+                    QApplication::processEvents();
+                }
+            }
+            else {
+                QDialog* dialog = new QDialog(this);
+                /*dialog->setAttribute(Qt::WA_DeleteOnClose);*/
+                dialog->setWindowTitle(tr("error:0011"));
+                dialog->setFixedSize(280, 100);
+                QLabel* softwareNameLabel = new QLabel(QStringLiteral("机器人运动学逆解不可求"), this);
+                // 设置 QLabel 的对齐方式
+                softwareNameLabel->setAlignment(Qt::AlignCenter);
+                // 创建布局管理器
+                QVBoxLayout* layout = new QVBoxLayout(this);
+                // 将 QLabel 添加到布局中
+                layout->addWidget(softwareNameLabel);
+                // 设置布局管理器为对话框的布局
+                dialog->setLayout(layout);
+                dialog->show();
+                //显示新窗口
+            }
         }
         
     });
@@ -258,7 +278,7 @@ MainWindow::MainWindow(QWidget* parent) :
     auto buttonJointAngleMoveStart=new QPushButton(this);
     buttonJointAngleMoveStart->setText(QStringLiteral("开始关节运动"));
     QVBoxLayout *layout07=new QVBoxLayout(this);
-    QSpacerItem *hSpacer06=new QSpacerItem(40,20,QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *hSpacer07=new QSpacerItem(40,20,QSizePolicy::Expanding, QSizePolicy::Minimum);
     layout07->addWidget(Editlabel1);
     layout07->addWidget(EditJoint1Angle);
     layout07->addWidget(Editlabel2);
@@ -271,7 +291,7 @@ MainWindow::MainWindow(QWidget* parent) :
     layout07->addWidget(EditJoint5Angle);
     layout07->addWidget(Editlabel6);
     layout07->addWidget(EditJoint6Angle);
-    layout07->addItem(hSpacer06);
+    layout07->addItem(hSpacer07);
     layout07->addWidget(buttonJointAngleMoveStart);
     
     ui->tabWidgetPage3->setLayout(layout07);
@@ -355,10 +375,10 @@ void MainWindow::stateTextShow() {
     );
     Eigen::Vector3d ToolPosition = occWidget->getToolPositionNow();
     Eigen::Quaterniond ToolQuaternion = occWidget->getToolQuaternionNow();
-    coorText->setPlainText(QString::number(ToolQuaternion.w(), 'f', 2) + " + " +
-        QString::number(ToolQuaternion.x(), 'f', 2) + " i+ " +
-        QString::number(ToolQuaternion.y(), 'f', 2) + " j+ " +
-        QString::number(ToolQuaternion.z(), 'f', 2) + " k , " +
+    coorText->setPlainText(QString::number(ToolQuaternion.w(), 'f', 2) + "+" +
+        QString::number(ToolQuaternion.x(), 'f', 2) + "i+" +
+        QString::number(ToolQuaternion.y(), 'f', 2) + "j+" +
+        QString::number(ToolQuaternion.z(), 'f', 2) + "k , " +
         QString::number(ToolPosition[0], 'f', 2) + " , " +
         QString::number(ToolPosition[1], 'f', 2) + " , " +
         QString::number(ToolPosition[2], 'f', 2)

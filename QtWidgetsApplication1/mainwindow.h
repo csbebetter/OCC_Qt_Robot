@@ -43,12 +43,11 @@ private slots:
 private:
     Ui::MainWindow *ui;
     OccView *occWidget;
+    QLineEdit* EditPartQuatCoor;
     QLineEdit* EditPartXCoor;
     QLineEdit* EditPartYCoor;
     QLineEdit* EditPartZCoor;
-    QLineEdit* EditPartRXCoor;
-    QLineEdit* EditPartRYCoor;
-    QLineEdit* EditPartRZCoor;
+
 
     QLineEdit* EditJoint1Angle;
     QLineEdit* EditJoint2Angle;
