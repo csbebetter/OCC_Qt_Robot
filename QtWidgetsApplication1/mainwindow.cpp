@@ -24,6 +24,21 @@ MainWindow::MainWindow(QWidget* parent) :
     ui->actionSTLImport->setIcon(QIcon(":/themes/dark/menu_3/STL.png"));
     ui->actionExport->setIcon(QIcon(":/themes/dark/export.svg"));
     ui->actionClose->setIcon(QIcon(":/themes/dark/stop.svg"));
+    //ToolBar图标设置：
+    cuboid = new QToolButton(this);
+    cylinder = new QToolButton(this);
+    cone = new QToolButton(this);
+    spheroid = new QToolButton(this);
+    cuboid->setIcon(QIcon(":/Toolbar/cuboid.svg"));
+    cylinder->setIcon(QIcon(":/Toolbar/cylinder.svg"));
+    cone->setIcon(QIcon(":/Toolbar/cone.svg"));
+    spheroid->setIcon(QIcon(":/Toolbar/spheroid.svg"));
+
+    ui->toolBar->addWidget(cuboid);
+    ui->toolBar->addWidget(cylinder);
+    ui->toolBar->addWidget(cone);
+    ui->toolBar->addWidget(spheroid);
+
     //分隔符设置
     ui->splitter->setVisible(true);
     ui->splitter->setChildrenCollapsible(false);
@@ -109,13 +124,13 @@ MainWindow::MainWindow(QWidget* parent) :
     /*****tabWidgetPage1******/
     /*****tabWidgetPage1******/
     auto buttonRobotMoveSim=new QPushButton(this);
-    buttonRobotMoveSim->setText(tr("RobotMoveSim"));
+    buttonRobotMoveSim->setText(QStringLiteral("轨迹输入"));
     auto buttonPartMoveSim=new QPushButton(this);
-    buttonPartMoveSim->setText(tr("PartMoveSim"));
+    buttonPartMoveSim->setText(QStringLiteral("轨迹规划"));
     auto buttontoolTrihedronDisplay=new QPushButton(this);
-    buttontoolTrihedronDisplay->setText(tr("toolTrihedronDisplay"));
+    buttontoolTrihedronDisplay->setText(QStringLiteral("机械臂配置"));
     auto buttonRobotHome=new QPushButton(this);
-    buttonRobotHome->setText(QStringLiteral("恢复初始位置"));
+    buttonRobotHome->setText(QStringLiteral("机械臂初始化"));
     QVBoxLayout *layout05=new QVBoxLayout(this);
     QSpacerItem *hSpacer04=new QSpacerItem(40,20,QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -176,15 +191,7 @@ MainWindow::MainWindow(QWidget* parent) :
         iss >> toolQuaternion.w() >> toolQuaternion.x() >> toolQuaternion.y() >> toolQuaternion.z();
         if (iss.fail()) {
             qDebug() << "无效的四元数输入";
-            QDialog* dialog = new QDialog(this);
-            dialog->setWindowTitle(tr("error:0013"));
-            dialog->setFixedSize(280, 100);
-            QLabel* softwareNameLabel = new QLabel(QStringLiteral("无效的四元数输入"), this);
-            softwareNameLabel->setAlignment(Qt::AlignCenter);
-            QVBoxLayout* layout = new QVBoxLayout(this);
-            layout->addWidget(softwareNameLabel);
-            dialog->setLayout(layout);
-            dialog->show();
+            errorPopUp(tr("error:0013"), QStringLiteral("无效的四元数输入"));
             toolQuaternion = occWidget->getToolQuaternionNow();
             toolCoor = occWidget->getToolPositionNow();
         }
@@ -234,21 +241,7 @@ MainWindow::MainWindow(QWidget* parent) :
                 }
             }
             else {
-                QDialog* dialog = new QDialog(this);
-                /*dialog->setAttribute(Qt::WA_DeleteOnClose);*/
-                dialog->setWindowTitle(tr("error:0011"));
-                dialog->setFixedSize(280, 100);
-                QLabel* softwareNameLabel = new QLabel(QStringLiteral("机器人运动学逆解不可求"), this);
-                // 设置 QLabel 的对齐方式
-                softwareNameLabel->setAlignment(Qt::AlignCenter);
-                // 创建布局管理器
-                QVBoxLayout* layout = new QVBoxLayout(this);
-                // 将 QLabel 添加到布局中
-                layout->addWidget(softwareNameLabel);
-                // 设置布局管理器为对话框的布局
-                dialog->setLayout(layout);
-                dialog->show();
-                //显示新窗口
+                errorPopUp(tr("error:0011"), QStringLiteral("机器人运动学逆解不可求"));
             }
         }
         
@@ -343,6 +336,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
 void MainWindow::TreeWidget_Init(Ui::STEPTree LeftTree)
 {
     //插入顶层项目
@@ -361,8 +355,6 @@ void MainWindow::TreeWidget_Init(Ui::STEPTree LeftTree)
     }
     ui->treeWidget->expandAll();   //设置item全部展开
 }
-
-
 
 void MainWindow::stateTextShow() {
     Eigen::VectorXd robotJointnow = occWidget->getThetaList();
@@ -384,6 +376,22 @@ void MainWindow::stateTextShow() {
         QString::number(ToolPosition[2], 'f', 2)
     );
 }
+
+void MainWindow::errorPopUp(QString errorType, QString errorContent) {
+    dialog = new QDialog(this);
+    dialog->setWindowTitle(errorType);
+    dialog->setFixedSize(280, 100);
+    QLabel* softwareNameLabel = new QLabel(errorContent, this);
+    softwareNameLabel->setAlignment(Qt::AlignCenter);
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->addWidget(softwareNameLabel);
+    dialog->setLayout(layout);
+    dialog->show();
+}
+
+/// <summary>
+/// on_xxx_triggered
+/// </summary>
 
 void MainWindow::on_actionWopImport_triggered()
 {

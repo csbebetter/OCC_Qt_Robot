@@ -4,6 +4,7 @@
 #include <thread>
 #include <QMainWindow>
 #include "occview.h"
+#include <QToolButton>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
@@ -29,6 +30,7 @@ public:
     ~MainWindow();
     void TreeWidget_Init(Ui::STEPTree LeftTree);
     void stateTextShow();
+    void errorPopUp(QString errorType,QString errorContent);
 
 private slots:
     //QtCreator默认的on_Qaction_triggered方法，自动帮你完成了connect（不推荐改写法，建议使用connect）
@@ -41,13 +43,19 @@ private slots:
     void on_actionSoftWareHelp_triggered();
 
 private:
-    Ui::MainWindow *ui;
-    OccView *occWidget;
+    Ui::MainWindow * ui;
+    OccView * occWidget;
+
+    QToolButton* cuboid;
+    QToolButton* cylinder;
+    QToolButton* cone;
+    QToolButton* spheroid;
+    
+
     QLineEdit* EditPartQuatCoor;
     QLineEdit* EditPartXCoor;
     QLineEdit* EditPartYCoor;
     QLineEdit* EditPartZCoor;
-
 
     QLineEdit* EditJoint1Angle;
     QLineEdit* EditJoint2Angle;
@@ -58,6 +66,8 @@ private:
 
     QTextEdit* angleText;
     QTextEdit* coorText;
+
+    QDialog* dialog;
 };
 
 #endif // MAINWINDOW_H

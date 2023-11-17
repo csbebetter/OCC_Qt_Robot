@@ -89,5 +89,9 @@
         <file>themes/robot.svg</file>
         <file>Picture/DH.png</file>
         <file>Picture/robotData.png</file>
+        <file>Toolbar/cone.svg</file>
+        <file>Toolbar/cuboid.svg</file>
+        <file>Toolbar/cylinder.svg</file>
+        <file>Toolbar/spheroid.svg</file>
     </qresource>
 </RCC>
