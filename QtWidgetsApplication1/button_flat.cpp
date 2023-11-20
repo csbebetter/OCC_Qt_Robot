@@ -179,5 +179,4 @@ void ButtonFlat::syncToAction()
     this->setChecked(m_defaultAction->isChecked());
     this->setCheckable(m_defaultAction->isCheckable());
 }
-
 } // namespace Mayo

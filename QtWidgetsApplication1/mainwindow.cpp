@@ -1,7 +1,6 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -24,6 +23,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui->actionSTLImport->setIcon(QIcon(":/themes/dark/menu_3/STL.png"));
     ui->actionExport->setIcon(QIcon(":/themes/dark/export.svg"));
     ui->actionClose->setIcon(QIcon(":/themes/dark/stop.svg"));
+
     //ToolBar图标设置：
     cuboid = new QToolButton(this);
     cylinder = new QToolButton(this);
@@ -39,6 +39,10 @@ MainWindow::MainWindow(QWidget* parent) :
     ui->toolBar->addWidget(cone);
     ui->toolBar->addWidget(spheroid);
 
+    QObject::connect(cuboid, &QToolButton::clicked, this, [&] {
+        cuboidDialogPopUp();
+        });
+
     //分隔符设置
     ui->splitter->setVisible(true);
     ui->splitter->setChildrenCollapsible(false);
@@ -51,24 +55,27 @@ MainWindow::MainWindow(QWidget* parent) :
     QHBoxLayout* layout031 = new QHBoxLayout(this);
     QHBoxLayout* layout032 = new QHBoxLayout(this);
     QHBoxLayout* layout03 = new QHBoxLayout(this);
-
-    auto button01 = Ui::createViewBtn(this, QIcon(":/themes/dark/expand.svg"), tr("Fit All"));
-    QSpacerItem* hSpacer01 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QHBoxLayout* layoutLog = new QHBoxLayout(this);
 
     auto angleTextLeft = new QLabel(QStringLiteral("关节角度："), this);
-    angleTextLeft->setFixedSize(80,30);
+    angleTextLeft->setFixedSize(80, 30);
     angleText = new QTextEdit(this);
     angleText->setFixedHeight(30);
     angleText->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     angleText->setReadOnly(true);
 
     auto coorTextLeft = new QLabel(QStringLiteral("空间坐标："), this);
-    coorTextLeft->setFixedSize(80,30);
+    coorTextLeft->setFixedSize(80, 30);
     coorText = new QTextEdit(this);
     coorText->setFixedHeight(30);
     coorText->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     coorText->setReadOnly(true);
-    
+
+    auto button01 = Ui::createViewBtn(this, QIcon(":/themes/dark/expand.svg"), tr("Fit All"));
+    auto collisionDetection = new QCheckBox(QStringLiteral("碰撞检测"),this);
+   /* auto collisionDetection = Ui::createViewBtn(this, QIcon(":/CollisionDetec/1.svg"), tr("Collision Detection Closed"));*/
+    //QSpacerItem* hSpacer01 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
     struct ButtonCreationData {
         QIcon icon;
         QString text;
@@ -98,7 +105,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     layout01->addWidget(button01);
     layout01->addWidget(btnViewMenu);
-    layout01->addItem(hSpacer01);
+    layout01->addStretch();
+    layout01->addWidget(collisionDetection);
 
     layout02->addWidget(occWidget);
     layout031->addWidget(angleTextLeft);
@@ -118,6 +126,16 @@ MainWindow::MainWindow(QWidget* parent) :
     QObject::connect(btnViewMenu, &Ui::ButtonFlat::clicked, this, [=]{
         menuBtnView->popup(btnViewMenu->mapToGlobal({ 0, btnViewMenu->height() }));
     });
+    QObject::connect(collisionDetection, &QCheckBox::toggled, [&](bool checked) {
+        if (checked) {
+            this->IsCollDetecOpen = 1;
+            qDebug() << "CheckBox is checked";
+        }
+        else {
+            this->IsCollDetecOpen = 0;
+            qDebug() << "CheckBox is unchecked";
+        }
+        });
 
     /*****tabWidgetPage1******/
     /*****tabWidgetPage1******/
@@ -146,6 +164,14 @@ MainWindow::MainWindow(QWidget* parent) :
         stateTextShow();
     });
 
+    /*****tabWidgetLog******/
+    /*****tabWidgetLog******/
+    /*****tabWidgetLog******/
+    /*****tabWidgetLog******/
+    QTextEdit* EditLog = new QTextEdit(this);
+    layoutLog->addWidget(EditLog);
+    ui->tabWidgetLog->setLayout(layoutLog);
+
 
     /*****tabWidgetPage2******/
     /*****tabWidgetPage2******/
@@ -157,17 +183,17 @@ MainWindow::MainWindow(QWidget* parent) :
     QLabel* EditlabelCoor4 = new QLabel(QStringLiteral("Z:"), this);
 
     EditPartQuatCoor = new QLineEdit("0.717107 0 0.717107 0",this);
-    EditPartXCoor = new QLineEdit("579.28",this);
+    EditPartXCoor = new QLineEdit("654.47",this);
     EditPartYCoor = new QLineEdit("0",this);
     EditPartZCoor = new QLineEdit("890",this);
 
     EditPartQuatCoor->setPlaceholderText(QStringLiteral("0.717107 0 0.717107 0"));
-    EditPartXCoor->setPlaceholderText(tr("579.28"));
+    EditPartXCoor->setPlaceholderText(tr("654.47"));
     EditPartYCoor->setPlaceholderText(tr("0"));
     EditPartZCoor->setPlaceholderText(tr("890"));
 
     auto buttonPartCoorOK=new QPushButton(this);
-    buttonPartCoorOK->setText(QStringLiteral("逆运动开始"));
+    buttonPartCoorOK->setText(QStringLiteral("开始逆运动"));
     QVBoxLayout *layout06=new QVBoxLayout(this);
     QSpacerItem* hSpacer06 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     layout06->addWidget(EditlabelCoor1);
@@ -190,8 +216,8 @@ MainWindow::MainWindow(QWidget* parent) :
         std::istringstream iss(quaternionStdString);
         iss >> toolQuaternion.w() >> toolQuaternion.x() >> toolQuaternion.y() >> toolQuaternion.z();
         if (iss.fail()) {
-            qDebug() << "无效的四元数输入";
-            errorPopUp(tr("error:0013"), QStringLiteral("无效的四元数输入"));
+            qDebug() << "无效的四元数输入,请按正确格式输入！";
+            errorPopUp(tr("error: 0013"), QStringLiteral("无效的四元数输入,请按正确格式输入！"));
             toolQuaternion = occWidget->getToolQuaternionNow();
             toolCoor = occWidget->getToolPositionNow();
         }
@@ -241,7 +267,7 @@ MainWindow::MainWindow(QWidget* parent) :
                 }
             }
             else {
-                errorPopUp(tr("error:0011"), QStringLiteral("机器人运动学逆解不可求"));
+                errorPopUp(tr("error: 0011"), QStringLiteral("机器人运动学逆解不可求！"));
             }
         }
         
@@ -305,6 +331,7 @@ MainWindow::MainWindow(QWidget* parent) :
         double a5 = (angles[4] - occWidget->getJoint05CurrentAngle()) / num;
         double a6 = (angles[5] - occWidget->getJoint06CurrentAngle()) / num;
         for (int i = 0; i < num; i++) {
+            occWidget->CollDetecfunc();
             occWidget->getJoint01CurrentAngle() += a1;
             occWidget->getJoint02CurrentAngle() += a2;
             occWidget->getJoint03CurrentAngle() += a3;
@@ -367,10 +394,15 @@ void MainWindow::stateTextShow() {
     );
     Eigen::Vector3d ToolPosition = occWidget->getToolPositionNow();
     Eigen::Quaterniond ToolQuaternion = occWidget->getToolQuaternionNow();
-    coorText->setPlainText(QString::number(ToolQuaternion.w(), 'f', 2) + "+" +
-        QString::number(ToolQuaternion.x(), 'f', 2) + "i+" +
-        QString::number(ToolQuaternion.y(), 'f', 2) + "j+" +
-        QString::number(ToolQuaternion.z(), 'f', 2) + "k , " +
+
+    QString ToolQuaternionx = (ToolQuaternion.x() >= 0) ? "+" + QString::number(ToolQuaternion.x(), 'f', 2) : QString::number(ToolQuaternion.x(), 'f', 2);
+    QString ToolQuaterniony = (ToolQuaternion.y() >= 0) ? "+" + QString::number(ToolQuaternion.y(), 'f', 2) : QString::number(ToolQuaternion.y(), 'f', 2);
+    QString ToolQuaternionz = (ToolQuaternion.z() >= 0) ? "+" + QString::number(ToolQuaternion.z(), 'f', 2) : QString::number(ToolQuaternion.z(), 'f', 2);
+
+    coorText->setPlainText(QString::number(ToolQuaternion.w(), 'f', 2) +
+        ToolQuaternionx + "i" +
+        ToolQuaterniony + "j" +
+        ToolQuaternionz + "k , " +
         QString::number(ToolPosition[0], 'f', 2) + " , " +
         QString::number(ToolPosition[1], 'f', 2) + " , " +
         QString::number(ToolPosition[2], 'f', 2)
@@ -378,16 +410,79 @@ void MainWindow::stateTextShow() {
 }
 
 void MainWindow::errorPopUp(QString errorType, QString errorContent) {
-    dialog = new QDialog(this);
-    dialog->setWindowTitle(errorType);
-    dialog->setFixedSize(280, 100);
-    QLabel* softwareNameLabel = new QLabel(errorContent, this);
-    softwareNameLabel->setAlignment(Qt::AlignCenter);
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->addWidget(softwareNameLabel);
-    dialog->setLayout(layout);
-    dialog->show();
+    QMessageBox::critical(this, errorType, errorContent);
 }
+
+void MainWindow::cuboidDialogPopUp() {
+    cuboidDialog = new QDialog(this);
+    cuboidDialog->setAttribute(Qt::WA_DeleteOnClose);
+    cuboidDialog->setWindowTitle(tr("Creat Cuboid:"));
+    cuboidDialog->setWindowModality(Qt::WindowModal);
+    cuboidDialog->resize(500, 300);
+
+    QLabel* CuboidLoca = new QLabel(QStringLiteral("输入原点（格式：x y z）"), this);
+    QLabel* CuboidQuat = new QLabel(QStringLiteral("输入姿态（格式：w x y z）"), this);
+    QLabel* CuboidValue = new QLabel(QStringLiteral("输入长宽高（格式：l w h）"), this);
+
+    QLineEdit* EditCuboidLoca = new QLineEdit("0 0 0", this);
+    QLineEdit* EditCuboidQuat = new QLineEdit("1 0 0 0", this);
+    QLineEdit* EditCuboidValue = new QLineEdit("100 100 100", this);
+
+    EditCuboidLoca->setPlaceholderText(tr("0 0 0"));
+    EditCuboidQuat->setPlaceholderText(tr("1 0 0 0"));
+    EditCuboidValue->setPlaceholderText(tr("100 100 100"));
+
+    auto buttonCubiod = new QPushButton(this);
+    buttonCubiod->setText(QStringLiteral("创建长方体"));
+
+    QLabel* CubiodimageLabel = new QLabel(this);
+    QPixmap image00(":/Toolbar/cuboid.svg");
+    QPixmap image = image00.scaled(200, 200, Qt::KeepAspectRatio);
+    CubiodimageLabel->setPixmap(image);
+    CubiodimageLabel->setAlignment(Qt::AlignCenter);
+
+    QVBoxLayout* layoutcuboidDialogRight = new QVBoxLayout(this);
+    QVBoxLayout* layoutcuboidDialogLeft = new QVBoxLayout(this);
+    QHBoxLayout* layoutcuboidDialog = new QHBoxLayout(this);
+    layoutcuboidDialogRight->addWidget(CuboidLoca);
+    layoutcuboidDialogRight->addWidget(EditCuboidLoca);
+    layoutcuboidDialogRight->addWidget(CuboidQuat);
+    layoutcuboidDialogRight->addWidget(EditCuboidQuat);
+    layoutcuboidDialogRight->addWidget(CuboidValue);
+    layoutcuboidDialogRight->addWidget(EditCuboidValue);
+    layoutcuboidDialogRight->addWidget(buttonCubiod);
+    layoutcuboidDialogLeft->addWidget(CubiodimageLabel);
+    layoutcuboidDialog->addLayout(layoutcuboidDialogLeft);
+    layoutcuboidDialog->addLayout(layoutcuboidDialogRight);
+    cuboidDialog->setLayout(layoutcuboidDialog);
+    cuboidDialog->show();
+    QObject::connect(buttonCubiod, &QPushButton::clicked, this, [&] {
+
+        QString quaternionString = EditCuboidLoca->text();
+        std::string quaternionStdString = quaternionString.toStdString();
+        std::istringstream iss(quaternionStdString);
+        //iss >> toolQuaternion.w() >> toolQuaternion.x() >> toolQuaternion.y() >> toolQuaternion.z();
+
+        // 创建立方体
+        Standard_Real aSize = 100.0; // 立方体的大小
+        TopoDS_Shape aBoxShape = BRepPrimAPI_MakeBox(aSize, aSize, aSize).Shape();
+
+        // 设置立方体的位置和姿态
+        gp_Trsf aTransformation;
+        gp_Vec aTranslationVector(700.0, -50.0, 300.0); // 设置平移矢量
+        aTransformation.SetTranslation(aTranslationVector); // 设置平移变换
+        BRepBuilderAPI_Transform aBRepTransform(aBoxShape, aTransformation);
+        TopoDS_Shape aTransformedBox = aBRepTransform.Shape();
+
+        // 在交互上下文中添加立方体
+        Handle(AIS_Shape) anAisBox = new AIS_Shape(aTransformedBox);
+        //Quantity_Color aColor(1.0, 0.0, 0.0, Quantity_TOC_RGB); // 设置为红色
+        //anAisBox->SetColor(aColor);
+        occWidget->loadDisplayProj(anAisBox);
+    });
+
+}
+
 
 /// <summary>
 /// on_xxx_triggered
@@ -485,7 +580,7 @@ void MainWindow::on_actionDeveloperState_triggered() {
     QDialog* dialog = new QDialog(this);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->setWindowTitle(tr("Developer Statement:"));
-    dialog->setFixedSize(650, 300);
+    dialog->setFixedSize(700, 300);
     
     QLabel* softwareNameLabel = new QLabel("Software Name: RobotSimTec", this);
     QLabel* versionLabel = new QLabel("Version: 1.1.3", this);
@@ -536,9 +631,6 @@ void MainWindow::on_actionSoftWareHelp_triggered() {
 
     QLabel* Title = new QLabel(QStringLiteral("软件使用说明"), this);
     Title->setAlignment(Qt::AlignCenter);
-    //QFont font;
-    //font.setFamily("Microsoft YaHei");
-    //Title->setFont(font);
 
     QLabel* imageLabel = new QLabel(this);
     QPixmap image00(":/Picture/robotData.png");

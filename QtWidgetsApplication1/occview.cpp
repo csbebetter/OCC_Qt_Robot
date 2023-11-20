@@ -1,5 +1,8 @@
 ﻿#include "occview.h"
-
+#include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepAlgoAPI_Cut.hxx>
+#include <BRepCheck_Analyzer.hxx>
+#include <BRepExtrema_ExtCC.hxx>
 
 #define KR6
 
@@ -35,7 +38,7 @@ OccView::OccView(QWidget *parent) : QWidget(parent)
     M.resize(4, 4);
     Slist.resize(6, 6);
     ThetaList.resize(6);
-    M << 0, 0, 1, 579.28,
+    M << 0, 0, 1, 654.47,
          0, 1, 0, 0,
         -1, 0, 0, 890,
          0, 0, 0, 1;
@@ -235,8 +238,11 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
             m_context->Display(RobotAISObject[i-1],true);
             getView()->FitAll();
         }
+        
+        ToolTopoShape = RobotAISObject[7]->Shape();
 
-        gp_Ax2 axisdefine = gp_Ax2(gp_Pnt(579.28, 0, 890), gp_Dir(1, 0, 0), gp_Dir(0, 0, -1));
+
+        gp_Ax2 axisdefine = gp_Ax2(gp_Pnt(654.47, 0, 890), gp_Dir(1, 0, 0), gp_Dir(0, 0, -1));
         Handle_Geom_Axis2Placement axis = new Geom_Axis2Placement(axisdefine);
         Handle_AIS_Trihedron aisTrihedron = new AIS_Trihedron(axis);
         aisTrihedron->SetDatumDisplayMode(Prs3d_DM_WireFrame);
@@ -265,6 +271,11 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
         RobotAISObject[2]->AddChild(RobotAISObject[3]);
         RobotAISObject[1]->AddChild(RobotAISObject[2]);
         RobotAISObject[0]->AddChild(RobotAISObject[1]);
+
+        
+        //TopLoc_Location ToolLocation = m_context->Location(RobotAISObject[7]);
+        //ToolLocation.DumpJson(std::cout);
+        //qDebug().noquote() << std::cout.rdbuf();
     }
     
 #ifdef KR6
@@ -357,74 +368,74 @@ void OccView::loadDisplayRobotJoints()
 
 void OccView::loadDisplayWorkpiece()
 {
-    STEPControl_Reader reader;
+    //STEPControl_Reader reader;
 
-    //Selecting STEP entities for translation : The whole file
-    //加载文件
-    Standard_Integer NbRoots = reader.NbRootsForTransfer();
-    Standard_Integer num = reader.TransferRoots();
+    ////Selecting STEP entities for translation : The whole file
+    ////加载文件
+    //Standard_Integer NbRoots = reader.NbRootsForTransfer();
+    //Standard_Integer num = reader.TransferRoots();
 
-    //Mapping STEP entities to Open CASCADE Technology shapes
-    PartTopoShape = reader.OneShape();
-    auto number=reader.NbShapes();
-    qDebug()<<"NbRoots:"<< NbRoots;
-    qDebug()<<"num:"<< num;
-    qDebug()<<"number:"<< number;
+    ////Mapping STEP entities to Open CASCADE Technology shapes
+    //PartTopoShape = reader.OneShape();
+    //auto number=reader.NbShapes();
+    //qDebug()<<"NbRoots:"<< NbRoots;
+    //qDebug()<<"num:"<< num;
+    //qDebug()<<"number:"<< number;
 
-    qDebug()<<"position:"<<  PartTopoShape.Location().Transformation().TranslationPart().X()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
-    gp_Vec vec(200,200,700);
-    gp_Trsf rsf01;
-    rsf01.SetTranslationPart(vec);
-    TopLoc_Location loc(rsf01);
-    PartTopoShape.Move(loc);
-    qDebug()<<"position01:"<<  PartTopoShape.Location().Transformation().TranslationPart().X()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
+    //qDebug()<<"position:"<<  PartTopoShape.Location().Transformation().TranslationPart().X()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
+    //gp_Vec vec(200,200,700);
+    //gp_Trsf rsf01;
+    //rsf01.SetTranslationPart(vec);
+    //TopLoc_Location loc(rsf01);
+    //PartTopoShape.Move(loc);
+    //qDebug()<<"position01:"<<  PartTopoShape.Location().Transformation().TranslationPart().X()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
 
-    PartAISShape = new AIS_Shape(PartTopoShape);
-    if(m_context->HasLocation(PartAISShape)){
-        qDebug()<<"m_context->HasLocation(PartAISShape)";
-    }
+    //PartAISShape = new AIS_Shape(PartTopoShape);
+    //if(m_context->HasLocation(PartAISShape)){
+    //    qDebug()<<"m_context->HasLocation(PartAISShape)";
+    //}
 
-    PartAISShape->SetDisplayMode(AIS_Shaded);
-    PartAISShape->SetColor(Quantity_NOC_RED);
-    m_context->Display(PartAISShape, true);
-    m_view->FitAll();
+    //PartAISShape->SetDisplayMode(AIS_Shaded);
+    //PartAISShape->SetColor(Quantity_NOC_RED);
+    //m_context->Display(PartAISShape, true);
+    //m_view->FitAll();
 
 }
 
 void OccView::loadDisplayTool()
 {
-    STEPControl_Reader reader;
-    IFSelect_ReturnStatus stat = reader.ReadFile(toolPath.toUtf8());
+    //STEPControl_Reader reader;
+    //IFSelect_ReturnStatus stat = reader.ReadFile(toolPath.toUtf8());
 
-    //Selecting STEP entities for translation : The whole file
-    //加载文件
-    Standard_Integer NbRoots = reader.NbRootsForTransfer();
-    Standard_Integer num = reader.TransferRoots();
+    ////Selecting STEP entities for translation : The whole file
+    ////加载文件
+    //Standard_Integer NbRoots = reader.NbRootsForTransfer();
+    //Standard_Integer num = reader.TransferRoots();
 
-    //Mapping STEP entities to Open CASCADE Technology shapes
-    ToolTopoShape = reader.OneShape();
-    auto number=reader.NbShapes();
-    qDebug()<<"NbRoots:"<< NbRoots;
-    qDebug()<<"num:"<< num;
-    qDebug()<<"number:"<< number;
+    ////Mapping STEP entities to Open CASCADE Technology shapes
+    //ToolTopoShape = reader.OneShape();
+    //auto number=reader.NbShapes();
+    //qDebug()<<"NbRoots:"<< NbRoots;
+    //qDebug()<<"num:"<< num;
+    //qDebug()<<"number:"<< number;
 
-    qDebug()<<"position:"<<  ToolTopoShape.Location().Transformation().TranslationPart().X()<<","<<  ToolTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
-    gp_Vec vec(200,200,700);
-    gp_Trsf rsf01;
-    rsf01.SetTranslationPart(vec);
-    TopLoc_Location loc(rsf01);
-    ToolTopoShape.Move(loc);
-    qDebug()<<"position01:"<<  ToolTopoShape.Location().Transformation().TranslationPart().X()<<","<<  ToolTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
+    //qDebug()<<"position:"<<  ToolTopoShape.Location().Transformation().TranslationPart().X()<<","<<  ToolTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
+    //gp_Vec vec(200,200,700);
+    //gp_Trsf rsf01;
+    //rsf01.SetTranslationPart(vec);
+    //TopLoc_Location loc(rsf01);
+    //ToolTopoShape.Move(loc);
+    //qDebug()<<"position01:"<<  ToolTopoShape.Location().Transformation().TranslationPart().X()<<","<<  ToolTopoShape.Location().Transformation().TranslationPart().Y()<<","<<  PartTopoShape.Location().Transformation().TranslationPart().Z();
 
-    ToolAISShape = new AIS_Shape(ToolTopoShape);
-    if(m_context->HasLocation(ToolAISShape)){
-        qDebug()<<"m_context->HasLocation(ToolTopoShape)";
-    }
+    //ToolAISShape = new AIS_Shape(ToolTopoShape);
+    //if(m_context->HasLocation(ToolAISShape)){
+    //    qDebug()<<"m_context->HasLocation(ToolTopoShape)";
+    //}
 
-    ToolAISShape->SetDisplayMode(AIS_Shaded);
-    ToolAISShape->SetColor(Quantity_NOC_BLUE1);
-    m_context->Display(ToolAISShape, true);
-    m_view->FitAll();
+    //ToolAISShape->SetDisplayMode(AIS_Shaded);
+    //ToolAISShape->SetColor(Quantity_NOC_BLUE1);
+    //m_context->Display(ToolAISShape, true);
+    //m_view->FitAll();
 }
 
 void OccView::loadDisplaySTL()
@@ -433,6 +444,11 @@ void OccView::loadDisplaySTL()
 
 }
 
+void OccView::loadDisplayProj(Handle(AIS_Shape) anAisBox)
+{
+    PartTopoShape = anAisBox->Shape();
+    m_context->Display(anAisBox,Standard_True);
+}
 
 void OccView::InitView()
 {
@@ -606,8 +622,6 @@ void OccView::angleDebug(const gp_Ax3& FromSystem, const gp_Ax3& ToSystem)//变�
     qDebug() <<"Angle:"<< -theAlpha * 180 / 3.14 << "," << -theBeta * 180 / 3.14  << "," << -theGamma * 180 / 3.14  << endl;
 }
 
-
-
 void OccView::RobotBackHome()
 {
     getJoint01CurrentAngle()=getJoint02CurrentAngle()=getJoint03CurrentAngle()=0;
@@ -654,5 +668,38 @@ void OccView::JointSpaceMotion() {
         m_context->SetLocation(RobotAISObject[5], trans);
         trans.SetRotation(GeneralAx6, getJoint06CurrentAngle());
         m_context->SetLocation(RobotAISObject[6], trans);
+
         m_context->UpdateCurrentViewer();
+        //更新工具位置，用于实现碰撞监测；
+        TopLoc_Location ToolLocation = m_context->Location(RobotAISObject[7]);
+        ToolTopoShape = ToolTopoShape.Located(ToolLocation);
+}
+
+
+//碰撞检测
+bool OccView::CollDetecfunc() {
+    //GProp_GProps props;
+    //BRepGProp::VolumeProperties(ToolTopoShape, props);
+    //// 获取形状的质心坐标
+    //gp_Pnt centerOfMass = props.CentreOfMass();
+    //// 现在，centerOfMass 包含了形状的原点位置
+    //Standard_Real x = centerOfMass.X();
+    //Standard_Real y = centerOfMass.Y();
+    //Standard_Real z = centerOfMass.Z();
+    //qDebug() << "zhixin:" << x << "," << y << "," << z;
+    BRepAlgoAPI_Common aCommonOp(PartTopoShape, ToolTopoShape);
+    GProp_GProps props1;
+    BRepGProp::VolumeProperties(aCommonOp.Shape(), props1);
+    Standard_Real volume = props1.Mass();  // 获取形状的体积
+    qDebug() << "tiji" << volume;
+    if (aCommonOp.IsDone() && !aCommonOp.HasErrors() && volume > 0) {
+        // 发生碰撞
+        QMessageBox::critical(this, "peng zhuang le", "peng zhuang le");
+        Handle(AIS_Shape) anAisBox000 = new AIS_Shape(aCommonOp.Shape());
+        Quantity_Color aColor(1.0, 0.0, 0.0, Quantity_TOC_RGB); // 设置为红色
+        anAisBox000->SetColor(aColor);
+        m_context->Display(anAisBox000, Standard_True);
+        return 1;
+    }
+    return 0;
 }

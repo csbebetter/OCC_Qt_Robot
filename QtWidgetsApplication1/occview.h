@@ -14,7 +14,9 @@
 #include <QtCore/QString>
 #include <modern_robotics.h>
 #include <R_quaternion.h>
-
+#include <QMessageBox>
+#include <BRepGProp.hxx>
+#include <TopoDS.hxx>
 
 #define BUTTON_ON true
 #define BUTTON_OFF false
@@ -152,6 +154,9 @@ public:
     //加载和显示点云
     void loadDisplaySTL();
 
+    //加载和显示点云
+    void loadDisplayProj(Handle(AIS_Shape) anAisBox);
+
     const  Handle(V3d_View)& getView(){return m_view;}
     const  Handle(AIS_InteractiveContext)& getContext(){return m_context;}
 
@@ -179,6 +184,7 @@ public:
 
     void JointSpaceMotion();
     void InitAxJoint();
+    bool CollDetecfunc();
 
 private:
     void InitView();
@@ -194,6 +200,8 @@ private:
     std::vector<Handle(AIS_Shape)> NormalVector;
     Handle_Graphic3d_Camera cameraStart,cameraEnd;
     Handle(XCAFPrs_AISObject)RobotAISObject[8];//机器人的shape
+    
+
     //Handle(XCAFPrs_AISObject)RobotAISObject[8];//机器人的Object
     Handle_AIS_Shape PartAISShape;//工件的shape
     Handle_AIS_Shape ToolAISShape;//工具的shape
@@ -234,6 +242,7 @@ public:
     OCAFBrowser *ocaf;
     Eigen::MatrixXd M;
     Eigen::MatrixXd Slist;
+    Handle(AIS_Shape) co_anAisBox;
 };
 
 #endif // OCCVIEW_H

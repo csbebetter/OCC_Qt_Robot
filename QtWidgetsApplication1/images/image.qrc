@@ -93,5 +93,11 @@
         <file>Toolbar/cuboid.svg</file>
         <file>Toolbar/cylinder.svg</file>
         <file>Toolbar/spheroid.svg</file>
+        <file>Main/all.svg</file>
+        <file>Main/close.svg</file>
+        <file>Main/max.svg</file>
+        <file>Main/min.svg</file>
+        <file>CollisionDetec/1.svg</file>
+        <file>CollisionDetec/2.svg</file>
     </qresource>
 </RCC>

@@ -14,8 +14,7 @@
 #include <QPlainTextEdit>
 #include <QDialog>
 #include <QLabel>
-#include <iostream>
-
+#include <QCheckBox>
 
 namespace Ui {
 class MainWindow;
@@ -31,6 +30,8 @@ public:
     void TreeWidget_Init(Ui::STEPTree LeftTree);
     void stateTextShow();
     void errorPopUp(QString errorType,QString errorContent);
+    void cuboidDialogPopUp();
+    bool IsCollDetecOpen = 0;
 
 private slots:
     //QtCreator默认的on_Qaction_triggered方法，自动帮你完成了connect（不推荐改写法，建议使用connect）
@@ -67,7 +68,7 @@ private:
     QTextEdit* angleText;
     QTextEdit* coorText;
 
-    QDialog* dialog;
+    QDialog* cuboidDialog;
+    QMessageBox* errorMessageBox;
 };
-
 #endif // MAINWINDOW_H

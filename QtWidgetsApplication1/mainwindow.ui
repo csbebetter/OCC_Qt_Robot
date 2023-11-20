@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>600</height>
+    <width>1600</width>
+    <height>850</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,6 +19,9 @@
      <widget class="QSplitter" name="splitter">
       <property name="frameShape">
        <enum>QFrame::Box</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -32,13 +35,13 @@
       <widget class="QWidget" name="widget" native="true">
        <property name="minimumSize">
         <size>
-         <width>320</width>
+         <width>370</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>500</width>
+         <width>520</width>
          <height>16777215</height>
         </size>
        </property>
@@ -82,11 +85,16 @@
             <bool>true</bool>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>3</number>
            </property>
            <widget class="QWidget" name="tabWidgetPage1">
             <attribute name="title">
-             <string>设置</string>
+             <string>属性</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tabWidgetLog">
+            <attribute name="title">
+             <string>日志</string>
             </attribute>
            </widget>
            <widget class="QWidget" name="tabWidgetPage2">
@@ -136,9 +144,18 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1200</width>
+     <width>1600</width>
      <height>26</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>26</height>
+    </size>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -172,6 +189,8 @@
     <property name="title">
      <string>设置</string>
     </property>
+    <addaction name="action"/>
+    <addaction name="action_4"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -185,24 +204,39 @@
     <property name="title">
      <string>工具</string>
     </property>
+    <addaction name="action_5"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
      <string>视图</string>
+    </property>
+    <addaction name="action_2"/>
+    <addaction name="action_3"/>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>日志</string>
     </property>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSet"/>
    <addaction name="menu_2"/>
    <addaction name="menu"/>
+   <addaction name="menu_4"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="movable">
+    <bool>true</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::AllToolBarAreas</set>
+   </property>
    <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
+    <enum>RightToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
@@ -266,6 +300,31 @@
   <action name="actionDeveloperState">
    <property name="text">
     <string>开发者声明</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>碰撞检测开启/关闭</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>基础视图</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>高级视图</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>偏好设置</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>位姿变换</string>
    </property>
   </action>
  </widget>

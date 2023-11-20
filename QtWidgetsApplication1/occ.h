@@ -207,4 +207,5 @@
 #include <RWStl_Reader.hxx>
 
 #include <Poly_Polygon3D.hxx>
+#include <GProp_GProps.hxx>
 #endif // OCC_H
