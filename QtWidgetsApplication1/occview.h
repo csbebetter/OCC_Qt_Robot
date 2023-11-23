@@ -15,8 +15,7 @@
 #include <modern_robotics.h>
 #include <R_quaternion.h>
 #include <QMessageBox>
-#include <BRepGProp.hxx>
-#include <TopoDS.hxx>
+
 
 #define BUTTON_ON true
 #define BUTTON_OFF false
@@ -162,14 +161,10 @@ public:
 
     Handle_AIS_Shape& getAISShape(){return PartAISShape;}
 
-
-    void SetModelLocation(Handle(AIS_Shape)& aShape,gp_Trsf trsf);
-    void SetModelLocation_Euler(Handle(AIS_Shape)& aShape, double* pTemp);
-    void SetModelLocation_Matrix(Handle(AIS_Shape)& aShape, double* matrixTemp);
-
-    void angleDebug(const gp_Ax3& FromSystem, const gp_Ax3& ToSystem);
-
-    void RobotBackHome();
+    //void SetModelLocation(Handle(AIS_Shape)& aShape,gp_Trsf trsf);
+    //void SetModelLocation_Euler(Handle(AIS_Shape)& aShape, double* pTemp);
+    //void SetModelLocation_Matrix(Handle(AIS_Shape)& aShape, double* matrixTemp);
+    //void angleDebug(const gp_Ax3& FromSystem, const gp_Ax3& ToSystem);
 
     double& getJoint01CurrentAngle(){return Joint01CurrentAngle;}
     double& getJoint02CurrentAngle(){return Joint02CurrentAngle;}
@@ -182,9 +177,11 @@ public:
     Eigen::Vector3d& getToolPositionNow() { return ToolPositionNow;}
     Eigen::Quaterniond& getToolQuaternionNow() { return ToolQuaternionNow; }
 
+    void RobotBackHome();
     void JointSpaceMotion();
     void InitAxJoint();
     bool CollDetecfunc();
+    void CloseCurrentRobot();
 
 private:
     void InitView();
@@ -200,7 +197,7 @@ private:
     std::vector<Handle(AIS_Shape)> NormalVector;
     Handle_Graphic3d_Camera cameraStart,cameraEnd;
     Handle(XCAFPrs_AISObject)RobotAISObject[8];//机器人的shape
-    
+    std::vector<Handle(AIS_Shape)> basicFormAISObject;
 
     //Handle(XCAFPrs_AISObject)RobotAISObject[8];//机器人的Object
     Handle_AIS_Shape PartAISShape;//工件的shape
@@ -220,6 +217,8 @@ private:
     QAction*  m_addAction;
     QAction*  m_delAction;
     gp_Trsf tttrsf;
+
+    void setm_delAction();
 
     //关节转动
     static double Joint01CurrentAngle;

@@ -331,7 +331,7 @@ MainWindow::MainWindow(QWidget* parent) :
         double a5 = (angles[4] - occWidget->getJoint05CurrentAngle()) / num;
         double a6 = (angles[5] - occWidget->getJoint06CurrentAngle()) / num;
         for (int i = 0; i < num; i++) {
-            occWidget->CollDetecfunc();
+            if (occWidget->CollDetecfunc()) { break; }
             occWidget->getJoint01CurrentAngle() += a1;
             occWidget->getJoint02CurrentAngle() += a2;
             occWidget->getJoint03CurrentAngle() += a3;
@@ -419,18 +419,24 @@ void MainWindow::cuboidDialogPopUp() {
     cuboidDialog->setWindowTitle(tr("Creat Cuboid:"));
     cuboidDialog->setWindowModality(Qt::WindowModal);
     cuboidDialog->resize(500, 300);
+    QRect mainWinGeometry = this->geometry();
+    cuboidDialog->move(mainWinGeometry.right() - cuboidDialog->width(), mainWinGeometry.top());
 
     QLabel* CuboidLoca = new QLabel(QStringLiteral("输入原点（格式：x y z）"), this);
     QLabel* CuboidQuat = new QLabel(QStringLiteral("输入姿态（格式：w x y z）"), this);
     QLabel* CuboidValue = new QLabel(QStringLiteral("输入长宽高（格式：l w h）"), this);
+    QLabel* CuboidColor = new QLabel(QStringLiteral("输入颜色[0~1]（格式：R G B）"), this);
 
-    QLineEdit* EditCuboidLoca = new QLineEdit("0 0 0", this);
-    QLineEdit* EditCuboidQuat = new QLineEdit("1 0 0 0", this);
-    QLineEdit* EditCuboidValue = new QLineEdit("100 100 100", this);
+
+    EditCuboidLoca = new QLineEdit("0 0 0", this);
+    EditCuboidQuat = new QLineEdit("1 0 0 0", this);
+    EditCuboidValue = new QLineEdit("100 100 100", this);
+    EditCuboidColor = new QLineEdit("1 0 0", this);
 
     EditCuboidLoca->setPlaceholderText(tr("0 0 0"));
     EditCuboidQuat->setPlaceholderText(tr("1 0 0 0"));
     EditCuboidValue->setPlaceholderText(tr("100 100 100"));
+    EditCuboidColor->setPlaceholderText(tr("1 0 0"));
 
     auto buttonCubiod = new QPushButton(this);
     buttonCubiod->setText(QStringLiteral("创建长方体"));
@@ -450,6 +456,8 @@ void MainWindow::cuboidDialogPopUp() {
     layoutcuboidDialogRight->addWidget(EditCuboidQuat);
     layoutcuboidDialogRight->addWidget(CuboidValue);
     layoutcuboidDialogRight->addWidget(EditCuboidValue);
+    layoutcuboidDialogRight->addWidget(CuboidColor);
+    layoutcuboidDialogRight->addWidget(EditCuboidColor);
     layoutcuboidDialogRight->addWidget(buttonCubiod);
     layoutcuboidDialogLeft->addWidget(CubiodimageLabel);
     layoutcuboidDialog->addLayout(layoutcuboidDialogLeft);
@@ -457,27 +465,53 @@ void MainWindow::cuboidDialogPopUp() {
     cuboidDialog->setLayout(layoutcuboidDialog);
     cuboidDialog->show();
     QObject::connect(buttonCubiod, &QPushButton::clicked, this, [&] {
+        double infoLoc[3];
+        QString quaternionString0 = EditCuboidLoca->text();
+        std::string quaternionStdString0 = quaternionString0.toStdString();
+        std::istringstream iss0(quaternionStdString0);
+        iss0 >> infoLoc[0] >> infoLoc[1] >> infoLoc[2];
 
-        QString quaternionString = EditCuboidLoca->text();
-        std::string quaternionStdString = quaternionString.toStdString();
-        std::istringstream iss(quaternionStdString);
-        //iss >> toolQuaternion.w() >> toolQuaternion.x() >> toolQuaternion.y() >> toolQuaternion.z();
+        double infoQuat[4];
+        QString quaternionString1 = EditCuboidQuat->text();
+        std::string quaternionStdString1 = quaternionString1.toStdString();
+        std::istringstream iss1(quaternionStdString1);
+        iss1 >> infoQuat[0] >> infoQuat[1] >> infoQuat[2] >> infoQuat[3];
+        gp_Quaternion infoQuate;
+        infoQuate.Set(infoQuat[1] , infoQuat[2] , infoQuat[3] , infoQuat[0]);
+        //infoQuate.Normalized();
+
+        double infoValue[3];
+        QString quaternionString2 = EditCuboidValue->text();
+        std::string quaternionStdString2 = quaternionString2.toStdString();
+        std::istringstream iss2(quaternionStdString2);
+        iss2 >> infoValue[0] >> infoValue[1] >> infoValue[2];
+
+        double infoColor[3];
+        QString quaternionString3 = EditCuboidColor->text();
+        std::string quaternionStdString3 = quaternionString3.toStdString();
+        std::istringstream iss3(quaternionStdString3);
+        iss3 >> infoColor[0] >> infoColor[1] >> infoColor[2];
 
         // 创建立方体
-        Standard_Real aSize = 100.0; // 立方体的大小
-        TopoDS_Shape aBoxShape = BRepPrimAPI_MakeBox(aSize, aSize, aSize).Shape();
+        TopoDS_Shape aBoxShape = BRepPrimAPI_MakeBox(infoValue[0], infoValue[1], infoValue[2]).Shape();
 
         // 设置立方体的位置和姿态
         gp_Trsf aTransformation;
-        gp_Vec aTranslationVector(700.0, -50.0, 300.0); // 设置平移矢量
+        gp_Vec aTranslationVector(infoLoc[0], infoLoc[1], infoLoc[2]); // 设置平移矢量
+        //aTransformation.SetRotation(infoQuate);
         aTransformation.SetTranslation(aTranslationVector); // 设置平移变换
-        BRepBuilderAPI_Transform aBRepTransform(aBoxShape, aTransformation);
-        TopoDS_Shape aTransformedBox = aBRepTransform.Shape();
+        BRepBuilderAPI_Transform aBRepTransform1(aBoxShape, aTransformation);
+        TopoDS_Shape aBoxShape1 = aBRepTransform1.Shape();
+        aTransformation.SetRotation(infoQuate);
+        BRepBuilderAPI_Transform aBRepTransform2(aBoxShape1, aTransformation);
+        TopoDS_Shape aTransformedBox = aBRepTransform2.Shape();
 
         // 在交互上下文中添加立方体
+        //Handle(AIS_InteractiveObject) selectedObject = m_context->SelectedInteractive();
+
         Handle(AIS_Shape) anAisBox = new AIS_Shape(aTransformedBox);
-        //Quantity_Color aColor(1.0, 0.0, 0.0, Quantity_TOC_RGB); // 设置为红色
-        //anAisBox->SetColor(aColor);
+        Quantity_Color color(infoColor[0], infoColor[1], infoColor[2], Quantity_TOC_RGB);  // 设置为红色
+        anAisBox->SetColor(color);
         occWidget->loadDisplayProj(anAisBox);
     });
 
@@ -643,4 +677,9 @@ void MainWindow::on_actionSoftWareHelp_triggered() {
     layout->addWidget(imageLabel);
     dialog->setLayout(layout);
     dialog->show();
+}
+
+void MainWindow::on_actionClose_triggered() {
+    occWidget->CloseCurrentRobot();
+    qDebug() << "----------------Robot Close++++++++++++++++ ";
 }

@@ -208,4 +208,11 @@
 
 #include <Poly_Polygon3D.hxx>
 #include <GProp_GProps.hxx>
+
+#include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepAlgoAPI_Cut.hxx>
+#include <BRepCheck_Analyzer.hxx>
+#include <BRepExtrema_ExtCC.hxx>
+#include <BRepGProp.hxx>
+#include <TopoDS.hxx>
 #endif // OCC_H

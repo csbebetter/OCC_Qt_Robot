@@ -42,6 +42,8 @@ private slots:
     void on_actionSTLImport_triggered();
     void on_actionDeveloperState_triggered();
     void on_actionSoftWareHelp_triggered();
+    void on_actionClose_triggered();
+
 
 private:
     Ui::MainWindow * ui;
@@ -70,5 +72,10 @@ private:
 
     QDialog* cuboidDialog;
     QMessageBox* errorMessageBox;
+
+    QLineEdit* EditCuboidLoca;
+    QLineEdit* EditCuboidQuat;
+    QLineEdit* EditCuboidValue;
+    QLineEdit* EditCuboidColor;
 };
 #endif // MAINWINDOW_H

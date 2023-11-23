@@ -99,5 +99,6 @@
         <file>Main/min.svg</file>
         <file>CollisionDetec/1.svg</file>
         <file>CollisionDetec/2.svg</file>
+        <file>qss/StyleSheet.qss</file>
     </qresource>
 </RCC>

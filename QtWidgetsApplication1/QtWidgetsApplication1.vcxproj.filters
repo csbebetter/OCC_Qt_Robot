@@ -72,7 +72,7 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <None Include="StyleSheet.qss">
+    <None Include="images\qss\StyleSheet.qss">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

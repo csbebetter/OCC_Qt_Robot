@@ -126,12 +126,12 @@
     <QtMoc Include="occview.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="StyleSheet.qss" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ModernRobotics\ModernRobotics.vcxproj">
       <Project>{6153891a-0407-421d-8eb5-9e3eb83ac941}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="images\qss\StyleSheet.qss" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

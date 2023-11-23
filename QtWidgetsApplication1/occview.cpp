@@ -1,8 +1,5 @@
 ﻿#include "occview.h"
-#include <BRepAlgoAPI_Fuse.hxx>
-#include <BRepAlgoAPI_Cut.hxx>
-#include <BRepCheck_Analyzer.hxx>
-#include <BRepExtrema_ExtCC.hxx>
+
 
 #define KR6
 
@@ -31,6 +28,10 @@ OccView::OccView(QWidget *parent) : QWidget(parent)
     m_contextMenu = new QMenu(this);  //这是右击弹出的菜单Fhome
     m_addAction = new QAction("new",this);
     m_delAction = new QAction("delete",this);
+    // 连接点击事件
+    QObject::connect(m_delAction, &QAction::triggered, [&]() {
+        setm_delAction();
+    });
     //给菜单添加菜单项
     m_contextMenu->addAction(m_addAction);
     m_contextMenu->addAction(m_delAction);
@@ -123,6 +124,7 @@ void OccView::InitAxJoint()
 
     Slist << Ax1S, Ax2S, Ax3S, Ax4S, Ax5S, Ax6S;
 }
+
 void OccView::paintEvent(QPaintEvent *)
 {
     m_view->Redraw();
@@ -147,6 +149,7 @@ void OccView::mousePressEvent(QMouseEvent *event)
     {
         if(qApp->keyboardModifiers() == Qt::ShiftModifier){
             m_context->ShiftSelect(true);
+
 
         }else if(qApp->keyboardModifiers() == Qt::ControlModifier){
 
@@ -242,7 +245,7 @@ void OccView::loadDisplayRobotWhole(Ui::STEPTree& Tree)
         ToolTopoShape = RobotAISObject[7]->Shape();
 
 
-        gp_Ax2 axisdefine = gp_Ax2(gp_Pnt(654.47, 0, 890), gp_Dir(1, 0, 0), gp_Dir(0, 0, -1));
+        gp_Ax2 axisdefine = gp_Ax2(gp_Pnt(M(0,3), M(1, 3), M(2,3)), gp_Dir(M(0, 2), M(1, 2), M(2, 2)), gp_Dir(M(0, 0), M(1, 0), M(2, 0)));
         Handle_Geom_Axis2Placement axis = new Geom_Axis2Placement(axisdefine);
         Handle_AIS_Trihedron aisTrihedron = new AIS_Trihedron(axis);
         aisTrihedron->SetDatumDisplayMode(Prs3d_DM_WireFrame);
@@ -438,16 +441,15 @@ void OccView::loadDisplayTool()
     //m_view->FitAll();
 }
 
-void OccView::loadDisplaySTL()
-{
-
-
-}
+void OccView::loadDisplaySTL(){}
 
 void OccView::loadDisplayProj(Handle(AIS_Shape) anAisBox)
 {
     PartTopoShape = anAisBox->Shape();
-    m_context->Display(anAisBox,Standard_True);
+    basicFormAISObject.push_back(anAisBox);
+    if (!basicFormAISObject.empty()) {
+        m_context->Display(basicFormAISObject.back(), Standard_True);
+    }
 }
 
 void OccView::InitView()
@@ -538,6 +540,8 @@ void OccView::InitView()
         aisTrihedron->Attributes()->SetZLayer(Graphic3d_ZLayerId_Topmost);
         aisTrihedron->SetInfiniteState(true);
         m_context->Display(aisTrihedron,true);
+        //m_context->SetAutoActivateSelection(Standard_True);
+        //m_context->Activate(TopAbs_SOLID);
     }
     //配置QWidget
     setAttribute(Qt::WA_PaintOnScreen);
@@ -556,72 +560,73 @@ void OccView::InitFilters()
 }
 
 
-void OccView::SetModelLocation(Handle(AIS_Shape)& aShape,gp_Trsf trsf)
-{
-    Handle_AIS_InteractiveObject Current(aShape);
-    if(!Current.IsNull())
-    {
-
-        m_context->SetLocation(Current,trsf);
-        m_context->Update(Current,Standard_True);  //等价于这句话 myContext->UpdateCurrentViewer();//窗口更新
-    }
-}
+//void OccView::SetModelLocation(Handle(AIS_Shape)& aShape,gp_Trsf trsf)
+//{
+//    Handle_AIS_InteractiveObject Current(aShape);
+//    if(!Current.IsNull())
+//    {
+//
+//        m_context->SetLocation(Current,trsf);
+//        m_context->Update(Current,Standard_True);  //等价于这句话 myContext->UpdateCurrentViewer();//窗口更新
+//    }
+//}
 
 //设置当前对象的位置
-void OccView::SetModelLocation_Matrix(Handle(AIS_Shape)& aShape, double* matrixTemp)
-{
-
-
-    cameraStart=getView()->Camera();
-    gp_Trsf trsf;
-
-    //    auto axe = new gp_Ax1(*new gp_Pnt(200, 60, 60), *new gp_Dir(0.0, 1.0, 0.0));//指定旋转轴
-    //    trsf.SetTranslation(*new gp_Pnt(200, 60, 60),*new gp_Pnt(201, 60, 60));
-    trsf.SetValues(matrixTemp[0],matrixTemp[1],matrixTemp[2], matrixTemp[3],
-            matrixTemp[4],matrixTemp[5],matrixTemp[6], matrixTemp[7],
-            matrixTemp[8],matrixTemp[9],matrixTemp[10],matrixTemp[11]);
-    qDebug()<<"1";
-    SetModelLocation(aShape,trsf);
-}
+//void OccView::SetModelLocation_Matrix(Handle(AIS_Shape)& aShape, double* matrixTemp)
+//{
+//
+//
+//    cameraStart=getView()->Camera();
+//    gp_Trsf trsf;
+//
+//    //    auto axe = new gp_Ax1(*new gp_Pnt(200, 60, 60), *new gp_Dir(0.0, 1.0, 0.0));//指定旋转轴
+//    //    trsf.SetTranslation(*new gp_Pnt(200, 60, 60),*new gp_Pnt(201, 60, 60));
+//    trsf.SetValues(matrixTemp[0],matrixTemp[1],matrixTemp[2], matrixTemp[3],
+//            matrixTemp[4],matrixTemp[5],matrixTemp[6], matrixTemp[7],
+//            matrixTemp[8],matrixTemp[9],matrixTemp[10],matrixTemp[11]);
+//    qDebug()<<"1";
+//    SetModelLocation(aShape,trsf);
+//}
 
 //通过YPR角度设置当前对象的位置
-void OccView::SetModelLocation_Euler(Handle(AIS_Shape)& aShape, double* pTemp)
-{
+//void OccView::SetModelLocation_Euler(Handle(AIS_Shape)& aShape, double* pTemp)
+//{
+//
+//    auto sourceTrsf=m_context->Location(aShape);
+//    double Rx{pTemp[0]},Ry{pTemp[1]},Rz{pTemp[2]};
+//    Rx= Rx/180*M_PI;
+//    Ry = Ry/180*M_PI;
+//    Rz = Rz/180*M_PI;
+//
+//    //设置欧拉角
+//    gp_Trsf aTrsf_Rotation;
+//    gp_Quaternion aQ;
+//    aQ.SetEulerAngles(gp_YawPitchRoll,Rx,Ry,Rz);
+//    aTrsf_Rotation.SetRotation(aQ);
+//
+//    //设置平移向量
+//    gp_Trsf aTrsf_Translation;
+//    gp_Vec theVectorOfTrans(pTemp[3],pTemp[4],pTemp[5]);
+//    aTrsf_Translation.SetTranslation(theVectorOfTrans);
+//    gp_Trsf trsf = aTrsf_Translation * aTrsf_Rotation;
+//    SetModelLocation(aShape,trsf);
+//}
+//
+//void OccView::angleDebug(const gp_Ax3& FromSystem, const gp_Ax3& ToSystem)//变换前后的坐标系
+//{
+//    gp_Trsf trsf;
+//    trsf.SetTransformation(FromSystem, ToSystem);
+//    gp_Quaternion quaternion = trsf.GetRotation();//获取四元数，存储了旋转信息
+//    //gp_Mat mat=quaternion.GetMatrix () ;//获取旋转矩阵
+//    Standard_Real theAlpha, theBeta, theGamma;
+//    //从四元数中获取欧拉角，一共有24种，根据需要添加
+//    quaternion.GetEulerAngles(gp_Intrinsic_XYZ, theAlpha, theBeta, theGamma);
+//    //与PowerMill中每个数值差一个负号，输出角度
+//    qDebug()<<"position:"<<trsf.TranslationPart().X()<<","<<trsf.TranslationPart().Y()<<","<<trsf.TranslationPart().Z();
+//    qDebug() <<"Angle:"<< -theAlpha * 180 / 3.14 << "," << -theBeta * 180 / 3.14  << "," << -theGamma * 180 / 3.14  << endl;
+//}
 
-    auto sourceTrsf=m_context->Location(aShape);
-    double Rx{pTemp[0]},Ry{pTemp[1]},Rz{pTemp[2]};
-    Rx= Rx/180*M_PI;
-    Ry = Ry/180*M_PI;
-    Rz = Rz/180*M_PI;
-
-    //设置欧拉角
-    gp_Trsf aTrsf_Rotation;
-    gp_Quaternion aQ;
-    aQ.SetEulerAngles(gp_YawPitchRoll,Rx,Ry,Rz);
-    aTrsf_Rotation.SetRotation(aQ);
-
-    //设置平移向量
-    gp_Trsf aTrsf_Translation;
-    gp_Vec theVectorOfTrans(pTemp[3],pTemp[4],pTemp[5]);
-    aTrsf_Translation.SetTranslation(theVectorOfTrans);
-    gp_Trsf trsf = aTrsf_Translation * aTrsf_Rotation;
-    SetModelLocation(aShape,trsf);
-}
-
-void OccView::angleDebug(const gp_Ax3& FromSystem, const gp_Ax3& ToSystem)//变换前后的坐标系
-{
-    gp_Trsf trsf;
-    trsf.SetTransformation(FromSystem, ToSystem);
-    gp_Quaternion quaternion = trsf.GetRotation();//获取四元数，存储了旋转信息
-    //gp_Mat mat=quaternion.GetMatrix () ;//获取旋转矩阵
-    Standard_Real theAlpha, theBeta, theGamma;
-    //从四元数中获取欧拉角，一共有24种，根据需要添加
-    quaternion.GetEulerAngles(gp_Intrinsic_XYZ, theAlpha, theBeta, theGamma);
-    //与PowerMill中每个数值差一个负号，输出角度
-    qDebug()<<"position:"<<trsf.TranslationPart().X()<<","<<trsf.TranslationPart().Y()<<","<<trsf.TranslationPart().Z();
-    qDebug() <<"Angle:"<< -theAlpha * 180 / 3.14 << "," << -theBeta * 180 / 3.14  << "," << -theGamma * 180 / 3.14  << endl;
-}
-
+//机械臂初始化；
 void OccView::RobotBackHome()
 {
     getJoint01CurrentAngle()=getJoint02CurrentAngle()=getJoint03CurrentAngle()=0;
@@ -654,6 +659,7 @@ void OccView::RobotBackHome()
     m_context->UpdateCurrentViewer();
 }
 
+//机械臂运动的核心运动调用函数；
 void OccView::JointSpaceMotion() {
         gp_Trsf trans;
         trans.SetRotation(GeneralAx1, getJoint01CurrentAngle());
@@ -691,15 +697,37 @@ bool OccView::CollDetecfunc() {
     GProp_GProps props1;
     BRepGProp::VolumeProperties(aCommonOp.Shape(), props1);
     Standard_Real volume = props1.Mass();  // 获取形状的体积
-    qDebug() << "tiji" << volume;
+    //qDebug() << "tiji" << volume;
     if (aCommonOp.IsDone() && !aCommonOp.HasErrors() && volume > 0) {
         // 发生碰撞
-        QMessageBox::critical(this, "peng zhuang le", "peng zhuang le");
-        Handle(AIS_Shape) anAisBox000 = new AIS_Shape(aCommonOp.Shape());
-        Quantity_Color aColor(1.0, 0.0, 0.0, Quantity_TOC_RGB); // 设置为红色
-        anAisBox000->SetColor(aColor);
-        m_context->Display(anAisBox000, Standard_True);
+        QMessageBox::critical(this, QStringLiteral("碰撞"), QStringLiteral("发生碰撞，请重置机械臂或重新规划运动"));
+        //Handle(AIS_Shape) anAisBox000 = new AIS_Shape(aCommonOp.Shape());
+        //Quantity_Color aColor(1.0, 0.0, 0.0, Quantity_TOC_RGB); // 设置为红色
+        //anAisBox000->SetColor(aColor);
+        //m_context->Display(anAisBox000, Standard_True);
         return 1;
     }
     return 0;
+}
+
+void OccView::CloseCurrentRobot() {
+    qDebug() << "----------------****************** ";
+    for (int i = 0; i < 8; i++) {
+        m_context->Remove(RobotAISObject[i], Standard_True);
+        qDebug() << "----------------Robot Close: ";
+    }
+}
+
+void OccView::setm_delAction() {
+    if (!basicFormAISObject.empty()) {
+        // 使用范围循环遍历容器
+        for (const auto& currentAISObject : basicFormAISObject) {
+            m_context->Remove(currentAISObject, Standard_True);
+        }
+        basicFormAISObject.clear();
+        qDebug() << "----------------done-------------------";
+    }
+    else {
+        qDebug() << "----------------kong-------------------";
+    }
 }
