@@ -1,6 +1,8 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+using namespace QsLogging;
+
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -168,9 +170,28 @@ MainWindow::MainWindow(QWidget* parent) :
     /*****tabWidgetLog******/
     /*****tabWidgetLog******/
     /*****tabWidgetLog******/
-    QTextEdit* EditLog = new QTextEdit(this);
+    EditLog = new QTextEdit(this);
     layoutLog->addWidget(EditLog);
     ui->tabWidgetLog->setLayout(layoutLog);
+    // 初始化日志机制
+    Logger& logger = Logger::instance();
+    logger.setLoggingLevel(QsLogging::TraceLevel);
+    // 添加QObject为目的地
+    DestinationPtr fileDestination(DestinationFactory::MakeFileDestination("../logfile.txt"));
+    DestinationPtr objectDestination(DestinationFactory::MakeFunctorDestination(this, SLOT(writelog(QString, int))));
+    logger.addDestination(fileDestination);
+    logger.addDestination(objectDestination);
+
+    // 打印日志
+    QLOG_TRACE() << "1-trace msg";
+    //QLOG_DEBUG() << "2-debug msg";
+    //QLOG_INFO() << "3-info msg";
+    //QLOG_WARN() << "4-warn msg";
+    //QLOG_ERROR() << "5-error msg";
+    //QLOG_FATAL() << "6-fatal msg";
+
+    //EditLog->append("111111111111111122222222333333311");
+    //EditLog->append("344444444444444444444444555555555");
 
 
     /*****tabWidgetPage2******/
@@ -243,6 +264,7 @@ MainWindow::MainWindow(QWidget* parent) :
                 double a5 = (theta_result[4] - occWidget->getJoint05CurrentAngle()) / num;
                 double a6 = (theta_result[5] - occWidget->getJoint06CurrentAngle()) / num;
                 for (int i = 0; i < num; i++) {
+                    
                     occWidget->getJoint01CurrentAngle() += a1;
                     occWidget->getJoint02CurrentAngle() += a2;
                     occWidget->getJoint03CurrentAngle() += a3;
@@ -263,6 +285,7 @@ MainWindow::MainWindow(QWidget* parent) :
                     occWidget->getToolPositionNow() = pos.block(0, 3, 3, 1);
 
                     stateTextShow();
+                    if (IsCollDetecOpen) { if (occWidget->CollDetecfunc()) { break; } }
                     QApplication::processEvents();
                 }
             }
@@ -331,7 +354,6 @@ MainWindow::MainWindow(QWidget* parent) :
         double a5 = (angles[4] - occWidget->getJoint05CurrentAngle()) / num;
         double a6 = (angles[5] - occWidget->getJoint06CurrentAngle()) / num;
         for (int i = 0; i < num; i++) {
-            if (occWidget->CollDetecfunc()) { break; }
             occWidget->getJoint01CurrentAngle() += a1;
             occWidget->getJoint02CurrentAngle() += a2;
             occWidget->getJoint03CurrentAngle() += a3;
@@ -352,6 +374,7 @@ MainWindow::MainWindow(QWidget* parent) :
             occWidget->getToolPositionNow() = pos.block(0, 3, 3, 1);
 
             stateTextShow();
+            if (IsCollDetecOpen) { if (occWidget->CollDetecfunc()) { break; } }
             QApplication::processEvents();
             }
         });
@@ -428,7 +451,7 @@ void MainWindow::cuboidDialogPopUp() {
     QLabel* CuboidColor = new QLabel(QStringLiteral("输入颜色[0~1]（格式：R G B）"), this);
 
 
-    EditCuboidLoca = new QLineEdit("0 0 0", this);
+    EditCuboidLoca = new QLineEdit("600 -50 700", this);
     EditCuboidQuat = new QLineEdit("1 0 0 0", this);
     EditCuboidValue = new QLineEdit("100 100 100", this);
     EditCuboidColor = new QLineEdit("1 0 0", this);
@@ -682,4 +705,8 @@ void MainWindow::on_actionSoftWareHelp_triggered() {
 void MainWindow::on_actionClose_triggered() {
     occWidget->CloseCurrentRobot();
     qDebug() << "----------------Robot Close++++++++++++++++ ";
+}
+
+void MainWindow::writelog(const QString& message, int level) {
+    EditLog->append(message /*+ " " + QString::number(level)*/);
 }

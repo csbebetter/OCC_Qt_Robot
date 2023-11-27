@@ -657,6 +657,8 @@ void OccView::RobotBackHome()
     getToolPositionNow() = M.block(0, 3, 3, 1);
 
     m_context->UpdateCurrentViewer();
+    TopLoc_Location ToolLocation = m_context->Location(RobotAISObject[7]);
+    ToolTopoShape = ToolTopoShape.Located(ToolLocation);
 }
 
 //机械臂运动的核心运动调用函数；

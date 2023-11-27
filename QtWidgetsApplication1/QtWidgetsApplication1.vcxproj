@@ -112,6 +112,11 @@
     <QtUic Include="mainwindow.ui" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\QsLog\QsLog.cpp" />
+    <ClCompile Include="..\QsLog\QsLogDest.cpp" />
+    <ClCompile Include="..\QsLog\QsLogDestConsole.cpp" />
+    <ClCompile Include="..\QsLog\QsLogDestFile.cpp" />
+    <ClCompile Include="..\QsLog\QsLogDestFunctor.cpp" />
     <ClCompile Include="button_flat.cpp" />
     <ClCompile Include="general.cpp" />
     <ClCompile Include="main.cpp" />
@@ -119,6 +124,13 @@
     <ClCompile Include="occview.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\QsLog\QsLog.h" />
+    <ClInclude Include="..\QsLog\QsLogDest.h" />
+    <ClInclude Include="..\QsLog\QsLogDestConsole.h" />
+    <ClInclude Include="..\QsLog\QsLogDestFile.h" />
+    <QtMoc Include="..\QsLog\QsLogDestFunctor.h" />
+    <ClInclude Include="..\QsLog\QsLogDisableForThisFile.h" />
+    <ClInclude Include="..\QsLog\QsLogLevel.h" />
     <ClInclude Include="general.h" />
     <ClInclude Include="occ.h" />
     <QtMoc Include="mainwindow.h" />

@@ -16,6 +16,8 @@
 #include <QLabel>
 #include <QCheckBox>
 
+#include "../QsLog/QsLog.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -43,8 +45,8 @@ private slots:
     void on_actionDeveloperState_triggered();
     void on_actionSoftWareHelp_triggered();
     void on_actionClose_triggered();
-
-
+    void writelog(const QString& message, int level);
+    
 private:
     Ui::MainWindow * ui;
     OccView * occWidget;
@@ -54,6 +56,8 @@ private:
     QToolButton* cone;
     QToolButton* spheroid;
     
+    //日志输出
+    QTextEdit* EditLog;
 
     QLineEdit* EditPartQuatCoor;
     QLineEdit* EditPartXCoor;
