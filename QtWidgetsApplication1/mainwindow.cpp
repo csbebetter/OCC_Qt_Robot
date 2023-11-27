@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     QObject::connect(cuboid, &QToolButton::clicked, this, [&] {
         cuboidDialogPopUp();
+        QLOG_DEBUG() << "Cuboid Created";
         });
 
     //分隔符设置
@@ -132,10 +133,12 @@ MainWindow::MainWindow(QWidget* parent) :
         if (checked) {
             this->IsCollDetecOpen = 1;
             qDebug() << "CheckBox is checked";
+            QLOG_DEBUG() << "Collision Detection Open";
         }
         else {
             this->IsCollDetecOpen = 0;
             qDebug() << "CheckBox is unchecked";
+            QLOG_DEBUG() << "Collision Detection Close";
         }
         });
 
@@ -164,6 +167,7 @@ MainWindow::MainWindow(QWidget* parent) :
     QObject::connect(buttonRobotHome,&QPushButton::clicked,this,[&]{
         occWidget->RobotBackHome();
         stateTextShow();
+        QLOG_DEBUG() << "Robot Reset";
     });
 
     /*****tabWidgetLog******/
@@ -181,18 +185,8 @@ MainWindow::MainWindow(QWidget* parent) :
     DestinationPtr objectDestination(DestinationFactory::MakeFunctorDestination(this, SLOT(writelog(QString, int))));
     logger.addDestination(fileDestination);
     logger.addDestination(objectDestination);
-
     // 打印日志
-    QLOG_TRACE() << "1-trace msg";
-    //QLOG_DEBUG() << "2-debug msg";
-    //QLOG_INFO() << "3-info msg";
-    //QLOG_WARN() << "4-warn msg";
-    //QLOG_ERROR() << "5-error msg";
-    //QLOG_FATAL() << "6-fatal msg";
-
-    //EditLog->append("111111111111111122222222333333311");
-    //EditLog->append("344444444444444444444444555555555");
-
+    QLOG_TRACE() << "OCC_Qt_Robot Start";
 
     /*****tabWidgetPage2******/
     /*****tabWidgetPage2******/
@@ -256,6 +250,7 @@ MainWindow::MainWindow(QWidget* parent) :
             theta_result = occWidget->getThetaList();
             bool result = mr::IKinSpace(occWidget->Slist, occWidget->M, R, theta_result, 0.00001, 0.00001);
             if (result) {
+                QLOG_DEBUG() << "Space Movement Start";
                 double num = 1000;
                 double a1 = (theta_result[0] - occWidget->getJoint01CurrentAngle()) / num;
                 double a2 = (theta_result[1] - occWidget->getJoint02CurrentAngle()) / num;
@@ -280,14 +275,13 @@ MainWindow::MainWindow(QWidget* parent) :
                         occWidget->getJoint06CurrentAngle();
                     Eigen::MatrixXd pos = mr::FKinSpace(occWidget->M, occWidget->Slist, occWidget->getThetaList());
                     Eigen::Matrix3d M33 = pos.block(0, 0, 3, 3);
-
                     occWidget->getToolQuaternionNow() = R2quaternion(M33);
                     occWidget->getToolPositionNow() = pos.block(0, 3, 3, 1);
-
                     stateTextShow();
                     if (IsCollDetecOpen) { if (occWidget->CollDetecfunc()) { break; } }
                     QApplication::processEvents();
                 }
+                QLOG_DEBUG() << "Space Movement End";
             }
             else {
                 errorPopUp(tr("error: 0011"), QStringLiteral("机器人运动学逆解不可求！"));
@@ -353,6 +347,7 @@ MainWindow::MainWindow(QWidget* parent) :
         double a4 = (angles[3] - occWidget->getJoint04CurrentAngle()) / num;
         double a5 = (angles[4] - occWidget->getJoint05CurrentAngle()) / num;
         double a6 = (angles[5] - occWidget->getJoint06CurrentAngle()) / num;
+        QLOG_DEBUG() << "Joint Movement Start";
         for (int i = 0; i < num; i++) {
             occWidget->getJoint01CurrentAngle() += a1;
             occWidget->getJoint02CurrentAngle() += a2;
@@ -376,8 +371,9 @@ MainWindow::MainWindow(QWidget* parent) :
             stateTextShow();
             if (IsCollDetecOpen) { if (occWidget->CollDetecfunc()) { break; } }
             QApplication::processEvents();
-            }
-        });
+        }
+        QLOG_DEBUG() << "Joint Movement End";
+    });
 }
 
 MainWindow::~MainWindow()
@@ -404,6 +400,7 @@ void MainWindow::TreeWidget_Init(Ui::STEPTree LeftTree)
         Global_item->addChild(item);
     }
     ui->treeWidget->expandAll();   //设置item全部展开
+    QLOG_TRACE() << "Robot Tree Init";
 }
 
 void MainWindow::stateTextShow() {
@@ -434,6 +431,7 @@ void MainWindow::stateTextShow() {
 
 void MainWindow::errorPopUp(QString errorType, QString errorContent) {
     QMessageBox::critical(this, errorType, errorContent);
+    QLOG_ERROR() << errorContent;
 }
 
 void MainWindow::cuboidDialogPopUp() {
@@ -586,6 +584,7 @@ void MainWindow::on_actionRbtImport_triggered()
     {
         QMessageBox::information(nullptr, tr("Path"), tr("You didn't select any files."));
     }
+    QLOG_DEBUG() << "Robot Import: "<< path;
 }
 
 void MainWindow::on_actionRbtJointImport_triggered()
@@ -704,9 +703,9 @@ void MainWindow::on_actionSoftWareHelp_triggered() {
 
 void MainWindow::on_actionClose_triggered() {
     occWidget->CloseCurrentRobot();
-    qDebug() << "----------------Robot Close++++++++++++++++ ";
+    QLOG_DEBUG() << "Robot Close";
 }
 
 void MainWindow::writelog(const QString& message, int level) {
-    EditLog->append(message /*+ " " + QString::number(level)*/);
+    EditLog->append(message + " " + QString::number(level) + ";");
 }

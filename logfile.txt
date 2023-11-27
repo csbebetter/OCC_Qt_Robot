@@ -1,1 +1,3 @@
-TRACE 2023-11-27T22:30:08.723 1-trace msg 
+TRACE 2023-11-27T23:30:56.118 OCC_Qt_Robot Start 
+TRACE 2023-11-27T23:31:59.598 Robot Tree Init 
+DEBUG 2023-11-27T23:31:59.599 Robot Import:  "D:/university/Qt_OCC_Robot/OCC_Qt_Robot/robot/KR6/KR6withTool.STEP" 

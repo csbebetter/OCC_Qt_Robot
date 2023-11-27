@@ -10,7 +10,7 @@ QMenu {
 
 QTextEdit,QLineEdit {
     background-color: transparent;
-    color: darkblue;
+    color: #333333;
     border: 2px solid darkblue;
     border-radius: 5px;
 }
