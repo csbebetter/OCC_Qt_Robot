@@ -84,7 +84,7 @@ public:
     explicit OccView(QWidget *parent = nullptr);
 
 signals:
-
+    void occviewLog(const QString& text);
 public slots:
 
 protected:

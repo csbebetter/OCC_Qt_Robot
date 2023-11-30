@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     qss.open(QFile::ReadOnly);
     a.setStyleSheet(qss.readAll());
     MainWindow w;
+    //w.setWindowFlags(Qt::FramelessWindowHint);  // Òþ²Ø±êÌâÀ¸
     w.show();
     qss.close();
     return a.exec();

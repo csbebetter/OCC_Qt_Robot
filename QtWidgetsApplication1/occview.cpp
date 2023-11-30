@@ -31,6 +31,7 @@ OccView::OccView(QWidget *parent) : QWidget(parent)
     // 连接点击事件
     QObject::connect(m_delAction, &QAction::triggered, [&]() {
         setm_delAction();
+        emit occviewLog("Delete Created Geometry");
     });
     //给菜单添加菜单项
     m_contextMenu->addAction(m_addAction);

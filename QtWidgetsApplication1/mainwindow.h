@@ -35,6 +35,7 @@ public:
     void cuboidDialogPopUp();
     bool IsCollDetecOpen = 0;
 
+
 private slots:
     //QtCreator默认的on_Qaction_triggered方法，自动帮你完成了connect（不推荐改写法，建议使用connect）
     void on_actionWopImport_triggered();
@@ -45,7 +46,9 @@ private slots:
     void on_actionDeveloperState_triggered();
     void on_actionSoftWareHelp_triggered();
     void on_actionClose_triggered();
+
     void writelog(const QString& message, int level);
+    void occLogUpdate(const QString& text);
     
 private:
     Ui::MainWindow * ui;
@@ -81,5 +84,6 @@ private:
     QLineEdit* EditCuboidQuat;
     QLineEdit* EditCuboidValue;
     QLineEdit* EditCuboidColor;
+
 };
 #endif // MAINWINDOW_H

@@ -13,22 +13,14 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>qrc;rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Form Files">
-      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
-      <Extensions>ui</Extensions>
-    </Filter>
-    <Filter Include="Translation Files">
-      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
-      <Extensions>ts</Extensions>
-    </Filter>
     <Filter Include="OCCView">
       <UniqueIdentifier>{571c1304-ad9e-4ed0-a770-d5fe373970ed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\..%255cQsLog">
-      <UniqueIdentifier>{40348974-81ff-4657-a33a-3e14e9e56950}</UniqueIdentifier>
+    <Filter Include="Source Files\QsLog">
+      <UniqueIdentifier>{cf63ef6c-507f-4335-af46-04d27b9c26d4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\..%255cQsLog">
-      <UniqueIdentifier>{55532c05-458f-4c93-b024-269467eee41d}</UniqueIdentifier>
+    <Filter Include="Header Files\QsLog">
+      <UniqueIdentifier>{843b2f09-ac01-44b5-b7ec-e8281b31cf41}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -57,20 +49,20 @@
     <ClCompile Include="general.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\QsLog\QsLogDest.cpp">
-      <Filter>Source Files\..%255cQsLog</Filter>
+    <ClCompile Include="QsLog\QsLogDest.cpp">
+      <Filter>Source Files\QsLog</Filter>
     </ClCompile>
-    <ClCompile Include="..\QsLog\QsLog.cpp">
-      <Filter>Source Files\..%255cQsLog</Filter>
+    <ClCompile Include="QsLog\QsLog.cpp">
+      <Filter>Source Files\QsLog</Filter>
     </ClCompile>
-    <ClCompile Include="..\QsLog\QsLogDestConsole.cpp">
-      <Filter>Source Files\..%255cQsLog</Filter>
+    <ClCompile Include="QsLog\QsLogDestConsole.cpp">
+      <Filter>Source Files\QsLog</Filter>
     </ClCompile>
-    <ClCompile Include="..\QsLog\QsLogDestFile.cpp">
-      <Filter>Source Files\..%255cQsLog</Filter>
+    <ClCompile Include="QsLog\QsLogDestFile.cpp">
+      <Filter>Source Files\QsLog</Filter>
     </ClCompile>
-    <ClCompile Include="..\QsLog\QsLogDestFunctor.cpp">
-      <Filter>Source Files\..%255cQsLog</Filter>
+    <ClCompile Include="QsLog\QsLogDestFunctor.cpp">
+      <Filter>Source Files\QsLog</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,23 +72,23 @@
     <ClInclude Include="occ.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\QsLog\QsLogDest.h">
-      <Filter>Header Files\..%255cQsLog</Filter>
+    <ClInclude Include="QsLog\QsLogDest.h">
+      <Filter>Header Files\QsLog</Filter>
     </ClInclude>
-    <ClInclude Include="..\QsLog\QsLog.h">
-      <Filter>Header Files\..%255cQsLog</Filter>
+    <ClInclude Include="QsLog\QsLog.h">
+      <Filter>Header Files\QsLog</Filter>
     </ClInclude>
-    <ClInclude Include="..\QsLog\QsLogDestConsole.h">
-      <Filter>Header Files\..%255cQsLog</Filter>
+    <ClInclude Include="QsLog\QsLogDestConsole.h">
+      <Filter>Header Files\QsLog</Filter>
     </ClInclude>
-    <ClInclude Include="..\QsLog\QsLogLevel.h">
-      <Filter>Header Files\..%255cQsLog</Filter>
+    <ClInclude Include="QsLog\QsLogLevel.h">
+      <Filter>Header Files\QsLog</Filter>
     </ClInclude>
-    <ClInclude Include="..\QsLog\QsLogDestFile.h">
-      <Filter>Header Files\..%255cQsLog</Filter>
+    <ClInclude Include="QsLog\QsLogDestFile.h">
+      <Filter>Header Files\QsLog</Filter>
     </ClInclude>
-    <ClInclude Include="..\QsLog\QsLogDisableForThisFile.h">
-      <Filter>Header Files\..%255cQsLog</Filter>
+    <ClInclude Include="QsLog\QsLogDisableForThisFile.h">
+      <Filter>Header Files\QsLog</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -109,8 +101,8 @@
     <QtMoc Include="mainwindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="..\QsLog\QsLogDestFunctor.h">
-      <Filter>Header Files\..%255cQsLog</Filter>
+    <QtMoc Include="QsLog\QsLogDestFunctor.h">
+      <Filter>Header Files\QsLog</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

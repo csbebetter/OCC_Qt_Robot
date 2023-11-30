@@ -188,6 +188,8 @@ MainWindow::MainWindow(QWidget* parent) :
     // 打印日志
     QLOG_TRACE() << "OCC_Qt_Robot Start";
 
+    connect(occWidget, &OccView::occviewLog, this, &MainWindow::occLogUpdate);
+
     /*****tabWidgetPage2******/
     /*****tabWidgetPage2******/
     /*****tabWidgetPage2******/
@@ -708,4 +710,8 @@ void MainWindow::on_actionClose_triggered() {
 
 void MainWindow::writelog(const QString& message, int level) {
     EditLog->append(message + " " + QString::number(level) + ";");
+}
+
+void MainWindow::occLogUpdate(const QString& text) {
+    QLOG_DEBUG() << text;
 }
